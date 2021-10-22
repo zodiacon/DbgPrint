@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OwnerDrawnMenu.h"
-
+#include "DebugView.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
@@ -32,6 +32,8 @@ protected:
 
 private:
 	void InitMenu();
+	void InitToolBar(CToolBarCtrl& tb);
+	CDebugView* CreateDebugOutputView(PCWSTR name);
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -51,4 +53,6 @@ private:
 	LRESULT OnViewHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	COwnerDrawnMenu<CMainFrame> m_Menu;
+	CTabView m_Tabs;
+	CDebugView m_DebugView;
 };

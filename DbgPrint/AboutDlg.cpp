@@ -8,6 +8,9 @@
 
 LRESULT CAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CenterWindow(GetParent());
+	SetDialogIcon(IDR_MAINFRAME);
+	AdjustOKCancelButtons();
+
 	return TRUE;
 }
 
