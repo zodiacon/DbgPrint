@@ -53,7 +53,6 @@ bool UserModeDebugOutput::Stop() {
 		return true;
 
 	auto rv = ::SignalObjectAndWait(_hStop.get(), _hThread.get(), 2000, FALSE);
-	ATLASSERT(rv == WAIT_OBJECT_0);
 	_hThread.reset();
 
 	return rv == WAIT_OBJECT_0;
@@ -64,6 +63,7 @@ bool UserModeDebugOutput::IsRunning() const {
 }
 
 DWORD UserModeDebugOutput::DebugListen() {
+	::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	HANDLE h[] = { _hStop.get(), _hDataReady.get() };
 
 	while (true) {

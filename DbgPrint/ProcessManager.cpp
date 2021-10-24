@@ -84,14 +84,16 @@ void ProcessManager::Init() {
 }
 
 void ProcessManager::AddProcessIfNotExist(DWORD pid) const {
-	std::shared_lock locker(_lock);
-	if (auto it = _processes.find(pid); it != _processes.end()) {
-		auto& pi = it->second;
-		if (pi.hProcess && ::WaitForSingleObject(pi.hProcess.get(), 0) == WAIT_TIMEOUT)
-			return;
-		locker.release();
-		std::lock_guard locker(_lock);
-		_processes.erase(pid);
+	{
+		std::shared_lock locker(_lock);
+		if (auto it = _processes.find(pid); it != _processes.end()) {
+			auto& pi = it->second;
+			if (pi.hProcess && ::WaitForSingleObject(pi.hProcess.get(), 0) == WAIT_TIMEOUT)
+				return;
+			locker.unlock();
+			std::lock_guard locker(_lock);
+			_processes.erase(pid);
+		}
 	}
 	AddProcess(pid);
 }

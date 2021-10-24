@@ -28,25 +28,25 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -151,7 +151,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling />
+      <ExceptionHandling>Async</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>WIN32;_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -183,7 +183,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <ExceptionHandling />
+      <ExceptionHandling>Async</ExceptionHandling>
       <DebugInformationFormat />
       <PreprocessorDefinitions>_WINDOWS;STRICT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -211,9 +211,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="DbgPrint.cpp" />
     <ClCompile Include="DebugView.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
+    <ClCompile Include="KernelModeDebugOutput.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -222,33 +224,43 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProcessManager.cpp" />
+    <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="UserModeDebugOutput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="AppSettings.h" />
     <ClInclude Include="DebugOutputBase.h" />
     <ClInclude Include="DebugView.h" />
     <ClInclude Include="ImageIconCache.h" />
+    <ClInclude Include="KernelModeDebugOutput.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="ProcessManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="SecurityHelper.h" />
     <ClInclude Include="UserModeDebugOutput.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DbgPrint.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\app.ico" />
+    <Image Include="res\app0.ico" />
+    <Image Include="res\atom.ico" />
     <Image Include="res\autoscroll.ico" />
     <Image Include="res\cancel.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\DbgPrint.ico" />
+    <Image Include="res\file_script.ico" />
     <Image Include="res\filter.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\letter-k.ico" />
     <Image Include="res\ok.ico" />
+    <Image Include="res\open.ico" />
     <Image Include="res\Play.ico" />
     <Image Include="res\save_as.ico" />
+    <Image Include="res\script.ico" />
     <Image Include="res\Stop.ico" />
   </ItemGroup>
   <ItemGroup>

@@ -56,40 +56,54 @@ BEGIN
         MENUITEM "&Run as Administrator...",    ID_FILE_RUNASADMINISTRATOR
         MENUITEM SEPARATOR
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "Co&mment...",                 ID_EDIT_COMMENT
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
     END
     POPUP "&View"
     BEGIN
+        MENUITEM "&Auto Scroll",                ID_VIEW_AUTOSCROLL
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...",              ID_VIEW_PROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
     END
     POPUP "&Capture"
     BEGIN
-        MENUITEM "Capture User Mode (this session)", ID_CAPTURE_CAPTUREUSERMODE
-        MENUITEM "Capture User Mode (Session 0)", ID_CAPTURE_Session0
-        MENUITEM "Capture &Kernel",             ID_CAPTURE_CAPTUREKERNEL
+        MENUITEM "&User Mode (This Session)",   ID_CAPTURE_CAPTUREUSERMODE
+        MENUITEM "User Mode (&Session 0)",      ID_CAPTURE_CAPTURESESSION0
+        MENUITEM "&Kernel",                     ID_CAPTURE_CAPTUREKERNEL
         MENUITEM SEPARATOR
-        MENUITEM "Capture &Output",             ID_CAPTURE_CAPTUREOUTPUT
+        MENUITEM "&Capture",                    ID_CAPTURE_CAPTUREOUTPUT
     END
     POPUP "&Options"
     BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Fonts...",                   ID_OPTIONS_FONTS
+        MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
     END
     POPUP "&Help"
     BEGIN
         MENUITEM "&About Debug Print...",       ID_APP_ABOUT
+    END
+END
+
+IDR_CONTEXT MENU
+BEGIN
+    POPUP "list"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "Co&mment...",                 ID_EDIT_COMMENT
+        MENUITEM SEPARATOR
+        MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
     END
 END
 
@@ -123,6 +137,18 @@ IDI_SAVEAS              ICON                    "res\\save_as.ico"
 
 IDI_STOP                ICON                    "res\\Stop.ico"
 
+IDI_SCRIPT_FILE         ICON                    "res\\file_script.ico"
+
+IDI_SCRIPT              ICON                    "res\\script.ico"
+
+IDI_OPEN                ICON                    "res\\open.ico"
+
+IDI_USER                ICON                    "res\\app.ico"
+
+IDI_USER0               ICON                    "res\\app0.ico"
+
+IDI_ATOM                ICON                    "res\\atom.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -134,9 +160,9 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Debug Print"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,130,52,50,14
-    LTEXT           "Debug Print v0.1\n\n(C)Pavel Yosifovich 2021",IDC_STATIC,39,14,101,26
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,18,17
+    DEFPUSHBUTTON   "OK",IDOK,68,52,50,14
+    LTEXT           "Debug Print v0.1\n\n©2021 Pavel Yosifovich",IDC_STATIC,52,10,128,26
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
 
@@ -189,8 +215,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 0,1,0,0
+ PRODUCTVERSION 0,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -203,15 +229,15 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "DbgPrint Module"
-            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "FileDescription", "Debug Printing User/Kernel"
+            VALUE "FileVersion", "0.1.0.0"
             VALUE "InternalName", "DbgPrint"
-            VALUE "LegalCopyright", "Copyright 2021"
+            VALUE "LegalCopyright", "©2021 Pavel Yosifovich"
             VALUE "OriginalFilename", "DbgPrint.exe"
             VALUE "ProductName", "DbgPrint Module"
-            VALUE "ProductVersion", "1, 0, 0, 1"
+            VALUE "ProductVersion", "0.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -239,7 +265,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "Debug Print"
+    IDR_MAINFRAME           "Debug Print v0.1"
+    IDS_TITLE               "Debug Print"
 END
 
 STRINGTABLE
@@ -273,7 +300,6 @@ BEGIN
     ID_WINDOW_CASCADE       "Arrange windows so they overlap\nCascade Windows"
     ID_WINDOW_TILE_HORZ     "Arrange windows as non-overlapping tiles\nTile Windows"
     ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
-    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
 END
 
 STRINGTABLE

@@ -16,6 +16,9 @@
     <Filter Include="Resource Files\Icons">
       <UniqueIdentifier>{c6f711aa-1c14-4907-bc95-ac76007e4f70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{05fd5740-3db0-4db9-9320-60cfe26af4be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -40,6 +43,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProcessManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SecurityHelper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="AppSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KernelModeDebugOutput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,6 +82,15 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SecurityHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AppSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KernelModeDebugOutput.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +128,24 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\Stop.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\file_script.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\script.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\open.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\app.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\app0.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\atom.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

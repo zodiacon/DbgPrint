@@ -7,6 +7,8 @@
 #include "AboutDlg.h"
 #include "MainFrm.h"
 #include "IconHelper.h"
+#include "SecurityHelper.h"
+#include "AppSettings.h"
 
 CMainFrame::CMainFrame() : m_Menu(this) {
 }
@@ -30,7 +32,11 @@ void CMainFrame::InitMenu() {
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_EDIT_FIND, IDI_FIND },
 		{ ID_CAPTURE_CAPTUREOUTPUT, IDI_PLAY },
-		{ ID_CAPTURE_CAPTUREKERNEL, IDI_KERNEL },
+		{ ID_CAPTURE_CAPTUREUSERMODE, IDI_USER },
+		{ ID_CAPTURE_CAPTURESESSION0, IDI_USER0 },
+		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
+		{ ID_FILE_SAVE, IDI_SAVEAS },
+		{ ID_FILE_OPEN, IDI_OPEN },
 	};
 	for (auto& cmd : cmds) {
 		if (cmd.icon)
@@ -55,6 +61,12 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) {
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ 0 },
 		{ ID_CAPTURE_CAPTUREOUTPUT, IDI_PLAY },
+		{ ID_VIEW_AUTOSCROLL, IDI_AUTOSCROLL },
+		{ 0 },
+		{ ID_CAPTURE_CAPTUREUSERMODE, IDI_USER },
+		{ ID_CAPTURE_CAPTURESESSION0, IDI_USER0 },
+		{ 0 },
+		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)
@@ -69,23 +81,60 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (SecurityHelper::IsRunningElevated()) {
+		CMenuHandle menu(GetMenu());
+		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
+		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
+	}
+	m_Menu.SetCheckIcon(AtlLoadIconImage(IDI_OK));
+
+	auto& settings = AppSettings::Get();
+	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DbgPrint");
+
 	InitMenu();
+	UIAddMenu(GetMenu());
 
 	CToolBarCtrl tb;
-	auto hWndToolBar = tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
+	tb.Create(m_hWnd, nullptr, nullptr, ATL_SIMPLE_TOOLBAR_PANE_STYLE, 0, ATL_IDW_TOOLBAR);
 	InitToolBar(tb);
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
-	AddSimpleReBarBand(hWndToolBar);
+	AddSimpleReBarBand(tb);
 
 	CreateSimpleStatusBar();
 
-	UIAddToolBar(hWndToolBar);
+	UIAddToolBar(tb);
 
-	UISetCheck(ID_VIEW_TOOLBAR, 1);
-	UISetCheck(ID_VIEW_STATUS_BAR, 1);
+	UISetCheck(ID_VIEW_TOOLBAR, settings.ViewToolBar());
+	UISetCheck(ID_VIEW_STATUS_BAR, settings.ViewStatusBar());
 
-	m_hWndClient = m_DebugView.Create(m_hWnd, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	SetAlwaysOnTop(settings.AlwaysOnTop());
+
+	m_Tabs.m_bTabCloseButton = false;
+	m_hWndClient = m_Tabs.Create(m_hWnd, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	CImageList images;
+	images.Create(16, 16, ILC_COLOR32 | ILC_COLOR | ILC_MASK, 4, 4);
+	images.AddIcon(AtlLoadIconImage(IDI_SCRIPT, 0, 16, 16));
+	images.AddIcon(AtlLoadIconImage(IDI_SCRIPT_FILE, 0, 16, 16));
+	m_Tabs.SetImageList(images);
+
+	UISetCheck(ID_CAPTURE_CAPTUREOUTPUT, settings.Capture());
+	UISetCheck(ID_CAPTURE_CAPTUREUSERMODE, settings.CaptureUserMode());
+	UISetCheck(ID_CAPTURE_CAPTURESESSION0, settings.CaptureSession0());
+	UISetCheck(ID_CAPTURE_CAPTUREKERNEL, settings.CaptureKernel());
+	UISetCheck(ID_VIEW_AUTOSCROLL, settings.AutoScroll());
+
+	if (!SecurityHelper::IsRunningElevated()) {
+		if (settings.CaptureSession0() || settings.CaptureKernel())
+			AtlMessageBox(m_hWnd, L"Running wth standard user rights. Session 0 and Kernel captures will not be available.",
+				IDS_TITLE, MB_ICONWARNING);
+		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
+		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
+	}
+	auto view = new CDebugView;
+	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	m_pActiveView = view;
+	m_Tabs.AddPage(view->m_hWnd, L"Real-time Log", 0, view);
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -97,6 +146,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	AppSettings::Get().SaveToKey();
+
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -136,3 +187,84 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	dlg.DoModal();
 	return 0;
 }
+
+LRESULT CMainFrame::OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (SecurityHelper::RunElevated())
+		SendMessage(WM_COMMAND, ID_APP_EXIT);
+	return 0;
+}
+
+void CMainFrame::SetAlwaysOnTop(bool alwaysOnTop) {
+	UISetCheck(ID_OPTIONS_ALWAYSONTOP, alwaysOnTop);
+	SetWindowPos(alwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+}
+
+LRESULT CMainFrame::OnAlwaysOnTop(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool onTop = (GetExStyle() & WS_EX_TOPMOST) ? false : true;
+	AppSettings::Get().AlwaysOnTop(onTop);
+	SetAlwaysOnTop(onTop);
+	return 0;
+}
+
+LRESULT CMainFrame::OnCapture(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool capture;
+	AppSettings::Get().Capture(capture = !AppSettings::Get().Capture());
+	UISetCheck(ID_CAPTURE_CAPTUREOUTPUT, capture);
+	m_pActiveView->Capture(capture);
+	return 0;
+}
+
+LRESULT CMainFrame::OnCaptureUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool capture;
+	AppSettings::Get().CaptureUserMode(capture = !AppSettings::Get().CaptureUserMode());
+	UISetCheck(ID_CAPTURE_CAPTUREUSERMODE, capture);
+	if (AppSettings::Get().Capture())
+		m_pActiveView->CaptureUser(capture);
+	return 0;
+}
+
+LRESULT CMainFrame::OnCaptureUserSession0(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool capture;
+	AppSettings::Get().CaptureSession0(capture = !AppSettings::Get().CaptureSession0());
+	UISetCheck(ID_CAPTURE_CAPTURESESSION0, capture);
+	if (AppSettings::Get().Capture())
+		m_pActiveView->CaptureSession0(capture);
+	return 0;
+}
+
+LRESULT CMainFrame::OnCaptureKernel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool capture;
+	AppSettings::Get().CaptureKernel(capture = !AppSettings::Get().CaptureKernel());
+	UISetCheck(ID_CAPTURE_CAPTUREKERNEL, capture);
+	if (AppSettings::Get().Capture())
+		m_pActiveView->CaptureKernel(capture);
+	return 0;
+}
+
+LRESULT CMainFrame::OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool autoscroll = !AppSettings::Get().AutoScroll();
+	AppSettings::Get().AutoScroll(autoscroll);
+	UISetCheck(ID_VIEW_AUTOSCROLL, autoscroll);
+
+	return 0;
+}
+
+LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	UpdateUI();
+	return 0;
+}
+
+void CMainFrame::UpdateUI() {
+	auto active = m_Tabs.GetActivePage() >= 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
+	auto& settings = AppSettings::Get();
+	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
+	UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
+	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
+	UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
+
+}
+
+LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	return 0;
+}
+

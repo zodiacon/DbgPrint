@@ -3,6 +3,9 @@
 #include "resource.h"
 
 int ImageIconCache::GetIcon(const CString& path, HICON* phIcon) const {
+	if (path.IsEmpty() || path.Find(L'\\') < 0)
+		return 0;
+
 	std::wstring wspath(path);
 	{
 		std::shared_lock locker(_lock);

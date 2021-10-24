@@ -25,14 +25,34 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+		if (m_Tabs && uMsg == WM_COMMAND) {
+			int page = m_Tabs.GetActivePage();
+			if (page >= 0) {
+				auto view = (CDebugView*)m_Tabs.GetPageData(page);
+				if (view->ProcessWindowMessage(hWnd, uMsg, wParam, lParam, lResult, 1))
+					break;
+			}
+		}
+		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
+		//NOTIFY_CODE_HANDLER(TBVN_CONTEXTMENU, OnPageActivated)
+		COMMAND_ID_HANDLER(ID_FILE_RUNASADMINISTRATOR, OnRunAsAdmin)
+		COMMAND_ID_HANDLER(ID_OPTIONS_ALWAYSONTOP, OnAlwaysOnTop)
+		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREOUTPUT, OnCapture)
+		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREUSERMODE, OnCaptureUser)
+		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTURESESSION0, OnCaptureUserSession0)
+		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREKERNEL, OnCaptureKernel)
+		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL, OnAutoScroll)
+		MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		CHAIN_MSG_MAP_MEMBER(m_Menu)
 	END_MSG_MAP()
 
 private:
+	void SetAlwaysOnTop(bool alwaysOnTop);
 	void InitMenu();
 	void InitToolBar(CToolBarCtrl& tb);
+	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
 
 // Handler prototypes (uncomment arguments if needed):
@@ -43,6 +63,7 @@ private:
 private:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -51,8 +72,15 @@ private:
 	LRESULT OnFileSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCapture(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCaptureUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCaptureUserSession0(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCaptureKernel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	COwnerDrawnMenu<CMainFrame> m_Menu;
 	CTabView m_Tabs;
-	CDebugView m_DebugView;
+	CDebugView* m_pActiveView;
 };
