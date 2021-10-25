@@ -91,6 +91,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	auto& settings = AppSettings::Get();
 	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DbgPrint");
 
+	auto font = settings.Font();
+	if (font.lfHeight == 0)
+		m_Font.CreatePointFont(100, L"Segoe UI");
+	else
+		m_Font.CreateFontIndirect(&font);
+
 	InitMenu();
 	UIAddMenu(GetMenu());
 
@@ -126,13 +132,14 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	if (!SecurityHelper::IsRunningElevated()) {
 		if (settings.CaptureSession0() || settings.CaptureKernel())
-			AtlMessageBox(m_hWnd, L"Running wth standard user rights. Session 0 and Kernel captures will not be available.",
+			AtlMessageBox(m_hWnd, L"Running with standard user rights. Session 0 and Kernel captures will not be available.",
 				IDS_TITLE, MB_ICONWARNING);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
 	}
 	auto view = new CDebugView;
 	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	view->SetFont(m_Font);
 	m_pActiveView = view;
 	m_Tabs.AddPage(view->m_hWnd, L"Real-time Log", 0, view);
 
@@ -258,10 +265,11 @@ void CMainFrame::UpdateUI() {
 	auto active = m_Tabs.GetActivePage() >= 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
 	auto& settings = AppSettings::Get();
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
-	UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
-	UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
-
+	if (SecurityHelper::IsRunningElevated()) {
+		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
+		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
+	}
 }
 
 LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

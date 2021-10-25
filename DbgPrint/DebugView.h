@@ -29,6 +29,7 @@ protected:
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+		MESSAGE_HANDLER(WM_SETFONT, OnSetFont)
 		CHAIN_MSG_MAP(CVirtualListView<CDebugView>)
 		CHAIN_MSG_MAP(CCustomDraw<CDebugView>)
 		CHAIN_MSG_MAP(BaseFrame)
@@ -59,6 +60,7 @@ private:
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;

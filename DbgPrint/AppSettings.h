@@ -6,6 +6,7 @@ struct AppSettings : Settings {
 	BEGIN_SETTINGS(AppSettings)
 		SETTING(MainWindowPlacement, WINDOWPLACEMENT{}, SettingType::Binary);
 		SETTING(Font, LOGFONT{}, SettingType::Binary);
+		SETTING(MenuFont, LOGFONT{}, SettingType::Binary);
 		SETTING(ViewToolBar, 1, SettingType::Bool);
 		SETTING(ViewStatusBar, 1, SettingType::Bool);
 		SETTING(SingleInstance, 0, SettingType::Bool);

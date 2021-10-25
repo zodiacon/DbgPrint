@@ -32,7 +32,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	HRESULT hRes = ::CoInitialize(nullptr);
 	ATLASSERT(SUCCEEDED(hRes));
 
-	AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES);	// add flags to support other controls
+	AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES);
 
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));

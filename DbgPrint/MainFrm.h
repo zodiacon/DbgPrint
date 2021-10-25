@@ -83,4 +83,5 @@ private:
 	COwnerDrawnMenu<CMainFrame> m_Menu;
 	CTabView m_Tabs;
 	CDebugView* m_pActiveView;
+	CFont m_Font;
 };

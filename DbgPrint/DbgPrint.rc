@@ -57,6 +57,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
+        MENUITEM "Save As &Text...",            ID_FILE_SAVEASTEXT
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
@@ -75,6 +76,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Search"
+    BEGIN
+        MENUITEM "&Find...\tCtrl+F",            ID_SEARCH_FIND
+        MENUITEM "&Quick Find\tCtrl+Q",         ID_SEARCH_QUICKFIND
     END
     POPUP "&Capture"
     BEGIN

@@ -42,9 +42,6 @@
     <ClCompile Include="ImageIconCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SecurityHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -53,6 +50,9 @@
     </ClCompile>
     <ClCompile Include="KernelModeDebugOutput.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessManager.cpp">
+      <Filter>Helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -77,9 +77,6 @@
     <ClInclude Include="ImageIconCache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
@@ -91,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="KernelModeDebugOutput.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessManager.h">
+      <Filter>Helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -153,5 +153,8 @@
     <ResourceCompile Include="DbgPrint.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="manifest.xml" />
   </ItemGroup>
 </Project>

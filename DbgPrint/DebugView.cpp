@@ -176,3 +176,8 @@ LRESULT CDebugView::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;
 }
+
+LRESULT CDebugView::OnSetFont(UINT, WPARAM wp, LPARAM, BOOL&) {
+	m_List.SetFont((HFONT)wp);
+	return 0;
+}
