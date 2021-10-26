@@ -7,6 +7,8 @@
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
 #include "AppSettings.h"
+#include "Helpers.h"
+#include "PropertiesDlg.h"
 
 void CDebugView::UpdateList() {
 	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
@@ -69,6 +71,22 @@ LRESULT CDebugView::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
 	return 0;
 }
 
+LRESULT CDebugView::OnFindItem(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
+	auto fi = (NMLVFINDITEM*)hdr;
+	auto text = fi->lvfi.psz;
+	auto col = GetColumnManager(m_List)->GetColumnByTag(ColumnType::ProcessName);
+	int selected = m_List.GetNextItem(-1, LVIS_SELECTED);
+
+	int start = selected + 1;
+	int count = m_List.GetItemCount();
+	CString name;
+	for (int i = start; i < count + start; i++) {
+		if (m_List.GetItemText(i % count, col, name) && name.CompareNoCase(text) == 0)
+			return i % count;
+	}
+	return -1;
+}
+
 CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 	CString text;
 	auto& item = *m_Items[row];
@@ -81,13 +99,15 @@ CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 				::FileTimeToLocalFileTime(&item.SystemTime, &ft);
 				SYSTEMTIME st;
 				::FileTimeToSystemTime(&ft, &st);
-				item.LocalTimeAsString.Format(L"%02d:%02d:%02d.%03d%03d", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, ft.dwLowDateTime * 10 % 1000);
+				item.LocalTimeAsString.Format(L"%02d:%02d:%02d.%03d%03d", 
+					st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, ft.dwLowDateTime * 10 % 1000);
 
 			}
 			return item.LocalTimeAsString;
 
 		case ColumnType::ProcessId: text.Format(L"%u", item.Pid); break;
 		case ColumnType::ProcessName: return item.ProcessName;
+		case ColumnType::Comment: return item.Comment;
 	}
 	return text;
 }
@@ -100,8 +120,12 @@ PCWSTR CDebugView::GetExistingColumnText(HWND h, int row, int col) const {
 	return nullptr;
 }
 
+bool CDebugView::IsSortable(HWND, int col) const {
+	return !AppSettings::Get().Capture();
+}
+
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
-	auto item = std::make_shared<DebugItem>();
+	auto item = std::make_unique<DebugItem>();
 	item->Pid = pid;
 	item->Text = text;
 	item->SystemTime = time;
@@ -117,6 +141,22 @@ void CDebugView::DoSort(SortInfo* const si) {
 	if (si == nullptr)
 		return;
 
+	auto col = GetColumnManager(si->hWnd)->GetColumnTag<ColumnType>(si->SortColumn);
+	auto asc = si->SortAscending;
+	auto compare = [&](auto const& item1, auto const& item2) {
+		switch (col) {
+			case ColumnType::Index: return SortHelper::Sort(item1->Index, item2->Index, asc);
+			case ColumnType::ProcessId: return SortHelper::Sort(item1->Pid, item2->Pid, asc);
+			case ColumnType::ProcessName: return SortHelper::Sort(item1->ProcessName, item2->ProcessName, asc);
+			case ColumnType::Time: return SortHelper::Sort(*(LONG64*)&item1->SystemTime, *(LONG64*)&item2->SystemTime, asc);
+			case ColumnType::Text: return SortHelper::Sort(item1->Text, item2->Text, asc);
+			case ColumnType::Comment: return SortHelper::Sort(item1->Comment, item2->Comment, asc);
+		};
+		return false;
+	};
+
+	std::lock_guard locker(m_Lock);
+	std::sort(m_Items.begin(), m_Items.end(), compare);
 }
 
 void CDebugView::Capture(bool capture) {
@@ -145,10 +185,18 @@ void CDebugView::CaptureSession0(bool capture) {
 	capture ? m_UserModeSession0.Run(this) : m_UserModeSession0.Stop();
 }
 
+void CDebugView::UpdateUI(CUpdateUIBase* ui) {
+	if (m_ui == nullptr)
+		m_ui = ui;
+	ui->UIEnable(ID_VIEW_PROPERTIES, m_List.GetSelectedCount() == 1);
+	ui->UIEnable(ID_EDIT_DELETE, m_List.GetSelectedCount() > 0);
+	ui->UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
+}
+
 int CDebugView::GetRowImage(HWND h, int row, int col) const {
 	auto& item = m_Items[row];
 	if (col == 0)
-		return ((item->Flags & DebugOutputFlags::Kernel) == DebugOutputFlags::Kernel) ? 1 : -1;
+		return ((item->Flags & DebugOutputFlags::Kernel) == DebugOutputFlags::Kernel) ? 1 : 2;
 
 	auto type = GetColumnManager(h)->GetColumnTag<ColumnType>(col);
 	if (type != ColumnType::ProcessName)
@@ -181,3 +229,79 @@ LRESULT CDebugView::OnSetFont(UINT, WPARAM wp, LPARAM, BOOL&) {
 	m_List.SetFont((HFONT)wp);
 	return 0;
 }
+
+LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, L"txt", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
+		L"Text Files (*.txt)\0*.txt\0All Files\0*.*\0", m_hWnd);
+	auto columns = m_List.GetHeader().GetItemCount();
+	if (dlg.DoModal() == IDOK) {
+		CString text;
+		for (int i = 0; i < m_List.GetItemCount(); i++) {
+			CString item;
+			for (int c = 0; c < columns; c++) {
+				if (m_List.GetItemText(i, c, item)) {
+					item.Trim(L"\n\r");
+					text += item;
+				}
+				if (c < columns - 1)
+					text += L",";
+			}
+			text += L"\n";
+		}
+		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr));
+		if (!hFile) {
+			Helpers::ReportError(L"Error: ");
+			return 0;
+		}
+		DWORD bytes;
+		if (!::WriteFile(hFile.get(), text.GetBuffer(), text.GetLength() * sizeof(WCHAR), &bytes, nullptr)) {
+			Helpers::ReportError(L"Error: ");
+			return 0;
+		}
+		AtlMessageBox(m_hWnd, L"Saved successfully.", IDS_TITLE, MB_ICONINFORMATION);
+	}
+	return 0;
+}
+
+LRESULT CDebugView::OnProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto selected = m_List.GetSelectionMark();
+	ATLASSERT(selected >= 0);
+	if (selected < 0)
+		return 0;
+
+	auto& item = *m_Items[selected];
+	CPropertiesDlg dlg(item);
+	if (IDOK == dlg.DoModal()) {
+		//
+		// update comment
+		//
+		item.Comment = dlg.GetComment();
+		item.Text = dlg.GetText();
+		m_List.RedrawItems(selected, selected);
+	}
+
+	return 0;
+}
+
+LRESULT CDebugView::OnItemChanged(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
+	if (m_ui) {
+		UpdateUI(m_ui);
+	}
+	return 0;
+}
+
+LRESULT CDebugView::OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int n = -1;
+	CString text;
+	int offset = 0;
+	{
+		std::lock_guard locker(m_Lock);
+		while ((n = m_List.GetNextItem(n, LVIS_SELECTED)) != -1) {
+			m_Items.erase(m_Items.begin() + n - offset);
+			offset++;
+		}
+	}
+	UpdateList();
+	return 0;
+}
+

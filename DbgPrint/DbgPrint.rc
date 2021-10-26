@@ -64,15 +64,16 @@ BEGIN
     POPUP "&Edit"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "Co&mment...",                 ID_EDIT_COMMENT
+        MENUITEM "Co&mment...\tCtrl+M",         ID_EDIT_COMMENT
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
+        MENUITEM "Clear &All\tShift+Del",       ID_EDIT_CLEAR_ALL
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...\tAlt+Enter",   ID_VIEW_PROPERTIES
     END
     POPUP "&View"
     BEGIN
         MENUITEM "&Auto Scroll",                ID_VIEW_AUTOSCROLL
-        MENUITEM SEPARATOR
-        MENUITEM "&Properties...",              ID_VIEW_PROPERTIES
         MENUITEM SEPARATOR
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
@@ -84,17 +85,28 @@ BEGIN
     END
     POPUP "&Capture"
     BEGIN
+        MENUITEM "&Capture",                    ID_CAPTURE_CAPTUREOUTPUT
+        MENUITEM SEPARATOR
         MENUITEM "&User Mode (This Session)",   ID_CAPTURE_CAPTUREUSERMODE
         MENUITEM "User Mode (&Session 0)",      ID_CAPTURE_CAPTURESESSION0
         MENUITEM "&Kernel",                     ID_CAPTURE_CAPTUREKERNEL
-        MENUITEM SEPARATOR
-        MENUITEM "&Capture",                    ID_CAPTURE_CAPTUREOUTPUT
+    END
+    POPUP "&Kernel"
+    BEGIN
+        MENUITEM "&Components...",              ID_KERNEL_COMPONENTS
+        MENUITEM "&Enable All Components",      ID_KERNEL_ENABLEALLCOMPONENTS
+        MENUITEM "&Disable All Components",     ID_KERNEL_DISABLEALLCOMPONENTS
     END
     POPUP "&Options"
     BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Fonts...",                   ID_OPTIONS_FONTS
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
+    END
+    POPUP "&Windows"
+    BEGIN
+        MENUITEM "&Close",                      ID_WINDOWS_CLOSE
+        MENUITEM "Close &All",                  ID_WINDOWS_CLOSEALL
     END
     POPUP "&Help"
     BEGIN
@@ -155,6 +167,10 @@ IDI_USER0               ICON                    "res\\app0.ico"
 
 IDI_ATOM                ICON                    "res\\atom.ico"
 
+IDI_ERASE               ICON                    "res\\erase.ico"
+
+IDI_USERMODE            ICON                    "res\\letter-u.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -169,6 +185,25 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,52,50,14
     LTEXT           "Debug Print v0.1\n\n©2021 Pavel Yosifovich",IDC_STATIC,52,10,128,26
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+END
+
+IDD_PROPERTIES DIALOGEX 0, 0, 343, 213
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Debug Item Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,113,192,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,179,192,50,14
+    LTEXT           "Process ID:",IDC_STATIC,7,15,38,8
+    EDITTEXT        IDC_PID,51,13,53,14,ES_CENTER | ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
+    LTEXT           "Process Name:",IDC_STATIC,128,15,48,8
+    EDITTEXT        IDC_NAME,182,13,155,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Image Path:",IDC_STATIC,7,38,40,8
+    EDITTEXT        IDC_PATH,51,36,286,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Text:",IDC_STATIC,7,60,18,8
+    EDITTEXT        IDC_TEXT,51,58,285,71,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
+    LTEXT           "Comment:",IDC_STATIC,7,144,34,8
+    EDITTEXT        IDC_COMMENT,51,143,285,29,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
 END
 
 
@@ -186,6 +221,14 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 66
+    END
+
+    IDD_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 336
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 206
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -261,6 +304,23 @@ END
 IDD_ABOUTBOX AFX_DIALOG_LAYOUT
 BEGIN
     0
+END
+
+IDD_PROPERTIES AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    50, 100, 0, 0,
+    50, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100,
+    0, 100, 0, 0,
+    0, 100, 100, 0
 END
 
 

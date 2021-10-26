@@ -26,3 +26,18 @@ struct IViewBase abstract {
 		_In_ LPARAM lParam, _Inout_ LRESULT& lResult, _In_ DWORD dwMsgMapID = 0) = 0;
 
 };
+
+struct DebugItem {
+	void* operator new(size_t size);
+	void operator delete(void* p);
+
+	DWORD Pid;
+	CString Text;
+	FILETIME SystemTime;
+	mutable CString LocalTimeAsString;
+	CString ProcessName;
+	DWORD Index;
+	DebugOutputFlags Flags;
+	CString Comment;
+	int Image{ -1 };
+};

@@ -51,7 +51,6 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 	_traceLog.EventRecordCallback = [](PEVENT_RECORD record) {
 		if (record->EventHeader.ProcessId != 0xffffffff) {
 			auto text = (PCSTR)((BYTE*)record->UserData + sizeof(ULONG) * 2);
-			ATLASSERT(strlen(text) < 512);
 			((KernelModeDebugOutput*)record->UserContext)->_sink->DebugOutput(
 				record->EventHeader.ProcessId,
 				text,

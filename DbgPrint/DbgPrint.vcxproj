@@ -330,7 +330,10 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="DbgPrint.cpp" />
+    <ClCompile Include="DebugOutputBase.cpp" />
     <ClCompile Include="DebugView.cpp" />
+    <ClCompile Include="Exporter.cpp" />
+    <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
     <ClCompile Include="KernelModeDebugOutput.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -343,6 +346,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProcessManager.cpp" />
+    <ClCompile Include="PropertiesDlg.cpp" />
     <ClCompile Include="SecurityHelper.cpp" />
     <ClCompile Include="UserModeDebugOutput.cpp" />
   </ItemGroup>
@@ -351,10 +355,13 @@
     <ClInclude Include="AppSettings.h" />
     <ClInclude Include="DebugOutputBase.h" />
     <ClInclude Include="DebugView.h" />
+    <ClInclude Include="Exporter.h" />
+    <ClInclude Include="Helpers.h" />
     <ClInclude Include="ImageIconCache.h" />
     <ClInclude Include="KernelModeDebugOutput.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="ProcessManager.h" />
+    <ClInclude Include="PropertiesDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SecurityHelper.h" />
@@ -371,10 +378,12 @@
     <Image Include="res\cancel.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\DbgPrint.ico" />
+    <Image Include="res\erase.ico" />
     <Image Include="res\file_script.ico" />
     <Image Include="res\filter.ico" />
     <Image Include="res\find.ico" />
     <Image Include="res\letter-k.ico" />
+    <Image Include="res\letter-u.ico" />
     <Image Include="res\ok.ico" />
     <Image Include="res\open.ico" />
     <Image Include="res\Play.ico" />

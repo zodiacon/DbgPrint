@@ -19,6 +19,9 @@
     <Filter Include="Helpers">
       <UniqueIdentifier>{05fd5740-3db0-4db9-9320-60cfe26af4be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Dialogs">
+      <UniqueIdentifier>{1588d934-6c0c-413b-aed1-0e05d76865ae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -28,9 +31,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugView.cpp">
@@ -54,15 +54,27 @@
     <ClCompile Include="ProcessManager.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="Exporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugOutputBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="PropertiesDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugView.h">
@@ -91,6 +103,18 @@
     </ClInclude>
     <ClInclude Include="ProcessManager.h">
       <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Exporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +170,12 @@
       <Filter>Resource Files\Icons</Filter>
     </Image>
     <Image Include="res\atom.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\erase.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
+    <Image Include="res\letter-u.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
   </ItemGroup>

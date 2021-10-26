@@ -37,6 +37,8 @@ void CMainFrame::InitMenu() {
 		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
 		{ ID_FILE_SAVE, IDI_SAVEAS },
 		{ ID_FILE_OPEN, IDI_OPEN },
+		{ ID_EDIT_DELETE, IDI_CANCEL },
+		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
 	};
 	for (auto& cmd : cmds) {
 		if (cmd.icon)
@@ -118,6 +120,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	m_Tabs.m_bTabCloseButton = false;
 	m_hWndClient = m_Tabs.Create(m_hWnd, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	m_Tabs.SetWindowMenu(CMenuHandle(GetMenu()).GetSubMenu(7));
+
 	CImageList images;
 	images.Create(16, 16, ILC_COLOR32 | ILC_COLOR | ILC_MASK, 4, 4);
 	images.AddIcon(AtlLoadIconImage(IDI_SCRIPT, 0, 16, 16));
@@ -270,9 +274,11 @@ void CMainFrame::UpdateUI() {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
 	}
+	m_pActiveView->UpdateUI(this);
 }
 
 LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	return 0;
 }
+
 
