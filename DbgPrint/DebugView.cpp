@@ -9,6 +9,7 @@
 #include "AppSettings.h"
 #include "Helpers.h"
 #include "PropertiesDlg.h"
+#include "CommentDlg.h"
 
 void CDebugView::UpdateList() {
 	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
@@ -87,6 +88,19 @@ LRESULT CDebugView::OnFindItem(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) 
 	return -1;
 }
 
+void CDebugView::ShowProperties(int selected) {
+	auto& item = *m_Items[selected];
+	CPropertiesDlg dlg(item);
+	if (IDOK == dlg.DoModal()) {
+		//
+		// update comment
+		//
+		item.Comment = dlg.GetComment();
+		item.Text = dlg.GetText();
+		m_List.RedrawItems(selected, selected);
+	}
+}
+
 CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 	CString text;
 	auto& item = *m_Items[row];
@@ -122,6 +136,23 @@ PCWSTR CDebugView::GetExistingColumnText(HWND h, int row, int col) const {
 
 bool CDebugView::IsSortable(HWND, int col) const {
 	return !AppSettings::Get().Capture();
+}
+
+BOOL CDebugView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) {
+	if (row < 0)
+		return FALSE;
+
+	ShowProperties(row);
+	return TRUE;
+}
+
+BOOL CDebugView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
+	if (row < 0)
+		return FALSE;
+
+	CMenu menu;
+	menu.LoadMenu(IDR_CONTEXT);
+	return m_pFrame->TrackPopupMenu(menu.GetSubMenu(0), 0, pt.x, pt.y);
 }
 
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
@@ -188,6 +219,7 @@ void CDebugView::CaptureSession0(bool capture) {
 void CDebugView::UpdateUI(CUpdateUIBase* ui) {
 	if (m_ui == nullptr)
 		m_ui = ui;
+
 	ui->UIEnable(ID_VIEW_PROPERTIES, m_List.GetSelectedCount() == 1);
 	ui->UIEnable(ID_EDIT_DELETE, m_List.GetSelectedCount() > 0);
 	ui->UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
@@ -269,16 +301,7 @@ LRESULT CDebugView::OnProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	if (selected < 0)
 		return 0;
 
-	auto& item = *m_Items[selected];
-	CPropertiesDlg dlg(item);
-	if (IDOK == dlg.DoModal()) {
-		//
-		// update comment
-		//
-		item.Comment = dlg.GetComment();
-		item.Text = dlg.GetText();
-		m_List.RedrawItems(selected, selected);
-	}
+	ShowProperties(selected);
 
 	return 0;
 }
@@ -301,7 +324,22 @@ LRESULT CDebugView::OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 			offset++;
 		}
 	}
+	m_List.SelectAllItems(false);
 	UpdateList();
+	return 0;
+}
+
+LRESULT CDebugView::OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ATLASSERT(m_List.GetSelectedCount() == 1);
+	int selected = m_List.GetSelectionMark();
+	ATLASSERT(selected >= 0);
+
+	auto& item = m_Items[selected];
+	CCommentDlg dlg(item->Comment);
+	if (IDOK == dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(CImageList(ImageIconCache::Get().GetImageList()).GetIcon(item->Image)))) {
+		item->Comment = dlg.GetComment();
+		m_List.RedrawItems(selected, selected);
+	}
 	return 0;
 }
 

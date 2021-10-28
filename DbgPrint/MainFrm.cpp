@@ -39,6 +39,7 @@ void CMainFrame::InitMenu() {
 		{ ID_FILE_OPEN, IDI_OPEN },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
 		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
+		{ ID_EDIT_COMMENT, IDI_COMMENT },
 	};
 	for (auto& cmd : cmds) {
 		if (cmd.icon)
@@ -141,7 +142,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
 	}
-	auto view = new CDebugView;
+	auto view = new CDebugView(this);
 	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	view->SetFont(m_Font);
 	m_pActiveView = view;
@@ -266,7 +267,7 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 }
 
 void CMainFrame::UpdateUI() {
-	auto active = m_Tabs.GetActivePage() >= 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
+	auto active = m_Tabs && m_Tabs.GetActivePage() >= 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
 	auto& settings = AppSettings::Get();
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
@@ -281,4 +282,7 @@ LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	return 0;
 }
 
+BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
+	return m_Menu.TrackPopupMenu(hMenu, flags, x, y, hWnd);
+}
 

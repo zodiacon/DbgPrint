@@ -15,7 +15,9 @@ LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     CImageList images(ImageIconCache::Get().GetImageList());
     SetDialogIcon(images.GetIcon(m_Item.Image));
 
-    SetDlgItemInt(IDC_PID, m_Item.Pid);
+    SetDlgItemInt(IDC_PID, m_Item.Pid, FALSE);
+    SetDlgItemInt(IDC_INDEX, m_Item.Index, FALSE);
+    SetDlgItemText(IDC_TIME, m_Item.LocalTimeAsString);
     SetDlgItemText(IDC_NAME, m_Item.ProcessName);
     SetDlgItemText(IDC_PATH, ProcessManager::Get().GetFullImagePath(m_Item.Pid));
     SetDlgItemText(IDC_TEXT, m_Item.Text);

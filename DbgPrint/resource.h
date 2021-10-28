@@ -16,10 +16,8 @@
 #define IDI_SAVEAS                      209
 #define IDI_STOP                        210
 #define IDI_SCRIPT_FILE                 211
-#define IDI_ICON2                       212
 #define IDI_SCRIPT                      212
 #define IDI_CANCEL                      213
-#define IDI_ICON1                       214
 #define IDI_OPEN                        214
 #define IDI_USER                        215
 #define IDI_USER0                       216
@@ -29,12 +27,16 @@
 #define IDI_ICON3                       220
 #define IDI_USERMODE                    220
 #define IDD_PROPERTIES                  221
+#define IDD_COMMENT                     223
+#define IDI_ICON1                       225
+#define IDI_COMMENT                     225
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
 #define IDC_PATH                        1002
 #define IDC_TEXT                        1003
-#define IDC_EDIT5                       1004
 #define IDC_COMMENT                     1004
+#define IDC_INDEX                       1005
+#define IDC_TIME                        1006
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
 #define ID_OPTIONS_FONTS                32777
@@ -55,14 +57,15 @@
 #define ID_WINDOWS_CLOSE                32794
 #define ID_WINDOWS_CLOSEALL             32795
 #define ID_EDIT_CLEARALL                32796
+#define ID_OPTIONS_CONFIRMDELETE        32797
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        223
-#define _APS_NEXT_COMMAND_VALUE         32797
-#define _APS_NEXT_CONTROL_VALUE         1005
+#define _APS_NEXT_RESOURCE_VALUE        226
+#define _APS_NEXT_COMMAND_VALUE         32798
+#define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

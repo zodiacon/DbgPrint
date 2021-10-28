@@ -5,6 +5,7 @@
 #include "KernelModeDebugOutput.h"
 #include "resource.h"
 #include <mutex>
+#include "Interfaces.h"
 
 class CDebugView :
 	public CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>,
@@ -14,9 +15,13 @@ class CDebugView :
 public:
 	using BaseFrame = CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>;
 
+	CDebugView(IMainFrame* frame) : m_pFrame(frame) {}
+
 	CString GetColumnText(HWND, int row, int col) const;
 	PCWSTR GetExistingColumnText(HWND, int row, int col) const;
 	bool IsSortable(HWND, int col) const;
+	BOOL OnDoubleClickList(HWND, int row, int col, POINT const& pt);
+	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
 
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo* const);
@@ -45,6 +50,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnProperties)
 		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnEditDelete)
+		COMMAND_ID_HANDLER(ID_EDIT_COMMENT, OnEditComment)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -53,6 +59,7 @@ protected:
 
 private:
 	void UpdateList();
+	void ShowProperties(int row);
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -64,6 +71,7 @@ private:
 	LRESULT OnProperties(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
 	LRESULT OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
@@ -73,5 +81,6 @@ private:
 	KernelModeDebugOutput m_KernelMode;
 	inline static ULONG s_Index;
 	CUpdateUIBase* m_ui{ nullptr };
+	IMainFrame* m_pFrame;
 };
 

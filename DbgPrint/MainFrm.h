@@ -2,10 +2,12 @@
 
 #include "OwnerDrawnMenu.h"
 #include "DebugView.h"
+#include "Interfaces.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
 	public CAutoUpdateUI<CMainFrame>,
+	public IMainFrame,
 	public CMessageFilter, 
 	public CIdleHandler
 {
@@ -16,6 +18,8 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
+
+	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) override;
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)

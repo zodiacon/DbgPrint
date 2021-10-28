@@ -329,6 +329,7 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="AppSettings.cpp" />
+    <ClCompile Include="CommentDlg.cpp" />
     <ClCompile Include="DbgPrint.cpp" />
     <ClCompile Include="DebugOutputBase.cpp" />
     <ClCompile Include="DebugView.cpp" />
@@ -353,11 +354,13 @@
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AppSettings.h" />
+    <ClInclude Include="CommentDlg.h" />
     <ClInclude Include="DebugOutputBase.h" />
     <ClInclude Include="DebugView.h" />
     <ClInclude Include="Exporter.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="ImageIconCache.h" />
+    <ClInclude Include="Interfaces.h" />
     <ClInclude Include="KernelModeDebugOutput.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="ProcessManager.h" />
@@ -376,6 +379,7 @@
     <Image Include="res\atom.ico" />
     <Image Include="res\autoscroll.ico" />
     <Image Include="res\cancel.ico" />
+    <Image Include="res\comment.ico" />
     <Image Include="res\copy.ico" />
     <Image Include="res\DbgPrint.ico" />
     <Image Include="res\erase.ico" />
