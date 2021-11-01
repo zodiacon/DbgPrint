@@ -50,7 +50,8 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 	_traceLog.ProcessTraceMode = PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_REAL_TIME;
 	_traceLog.EventRecordCallback = [](PEVENT_RECORD record) {
 		if (record->EventHeader.ProcessId != 0xffffffff) {
-			auto text = (PCSTR)((BYTE*)record->UserData + sizeof(ULONG) * 2);
+			auto text((PCSTR)((BYTE*)record->UserData + sizeof(ULONG) * 2));
+			ATLASSERT(text);
 			((KernelModeDebugOutput*)record->UserContext)->_sink->DebugOutput(
 				record->EventHeader.ProcessId,
 				text,

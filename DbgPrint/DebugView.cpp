@@ -11,6 +11,9 @@
 #include "PropertiesDlg.h"
 #include "CommentDlg.h"
 
+CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame) {
+}
+
 void CDebugView::UpdateList() {
 	m_List.SetItemCountEx((int)m_Items.size(), LVSICF_NOINVALIDATEALL | LVSICF_NOSCROLL);
 	DoSort(GetSortInfo(m_List));
@@ -119,7 +122,7 @@ CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 			}
 			return item.LocalTimeAsString;
 
-		case ColumnType::ProcessId: text.Format(L"%u", item.Pid); break;
+		case ColumnType::ProcessId: text.Format(L"%u", item.Process.ProcessId); break;
 		case ColumnType::ProcessName: return item.ProcessName;
 		case ColumnType::Comment: return item.Comment;
 	}
@@ -156,14 +159,15 @@ BOOL CDebugView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
 }
 
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
+	auto& pm = ProcessManager::Get();
 	auto item = std::make_unique<DebugItem>();
-	item->Pid = pid;
+	item->ProcessName = pm.GetProcessName(pid);
+	item->Process = pm.GetProcessKey(pid);
 	item->Text = text;
 	item->SystemTime = time;
 	item->Flags = flags;
 	item->Index = InterlockedIncrement(&s_Index);
-	item->ProcessName = ProcessManager::Get().GetProcessName(pid);
-	item->Image = pid <= 4 ? 0 : ImageIconCache::Get().GetIcon(ProcessManager::Get().GetFullImagePath(pid));
+	item->Image = pid <= 4 ? 0 : ImageIconCache::Get().GetIcon(pm.GetProcessInfo(item->Process)->FullPath);
 	std::lock_guard locker(m_Lock);
 	m_TempItems.push_back(std::move(item));
 }
@@ -177,7 +181,7 @@ void CDebugView::DoSort(SortInfo* const si) {
 	auto compare = [&](auto const& item1, auto const& item2) {
 		switch (col) {
 			case ColumnType::Index: return SortHelper::Sort(item1->Index, item2->Index, asc);
-			case ColumnType::ProcessId: return SortHelper::Sort(item1->Pid, item2->Pid, asc);
+			case ColumnType::ProcessId: return SortHelper::Sort(item1->Process.ProcessId, item2->Process.ProcessId, asc);
 			case ColumnType::ProcessName: return SortHelper::Sort(item1->ProcessName, item2->ProcessName, asc);
 			case ColumnType::Time: return SortHelper::Sort(*(LONG64*)&item1->SystemTime, *(LONG64*)&item2->SystemTime, asc);
 			case ColumnType::Text: return SortHelper::Sort(item1->Text, item2->Text, asc);
@@ -236,7 +240,7 @@ int CDebugView::GetRowImage(HWND h, int row, int col) const {
 
 	if (item->Image >= 0)
 		return item->Image;
-	return item->Pid ? 0 : 1;
+	return item->Process.ProcessId ? 0 : 1;
 }
 
 LRESULT CDebugView::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& handled) {

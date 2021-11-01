@@ -7,6 +7,8 @@
 #include <mutex>
 #include "Interfaces.h"
 
+class ProcessManager;
+
 class CDebugView :
 	public CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>,
 	public IDebugOutput,
@@ -15,7 +17,7 @@ class CDebugView :
 public:
 	using BaseFrame = CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>;
 
-	CDebugView(IMainFrame* frame) : m_pFrame(frame) {}
+	CDebugView(IMainFrame* frame, bool realTime = true);
 
 	CString GetColumnText(HWND, int row, int col) const;
 	PCWSTR GetExistingColumnText(HWND, int row, int col) const;

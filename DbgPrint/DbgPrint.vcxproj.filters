@@ -22,6 +22,9 @@
     <Filter Include="Dialogs">
       <UniqueIdentifier>{1588d934-6c0c-413b-aed1-0e05d76865ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Views">
+      <UniqueIdentifier>{ee4c9a95-06fc-4baa-983a-da8286275dba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -31,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UserModeDebugOutput.cpp">
@@ -72,15 +72,15 @@
     <ClCompile Include="CommentDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="DebugView.cpp">
+      <Filter>Views</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DebugOutputBase.h">
@@ -124,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="CommentDlg.h">
       <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugView.h">
+      <Filter>Views</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

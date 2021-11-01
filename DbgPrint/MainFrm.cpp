@@ -9,6 +9,7 @@
 #include "IconHelper.h"
 #include "SecurityHelper.h"
 #include "AppSettings.h"
+#include "Helpers.h"
 
 CMainFrame::CMainFrame() : m_Menu(this) {
 }
@@ -284,5 +285,20 @@ LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
 	return m_Menu.TrackPopupMenu(hMenu, flags, x, y, hWnd);
+}
+
+LRESULT CMainFrame::OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (!SecurityHelper::IsRunningElevated()) {
+		AtlMessageBox(m_hWnd, L"Changing kernel component levels requires running elevated.",
+			IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+
+	if (!Helpers::EnableAllkernelOutput(wID == ID_KERNEL_ENABLEALLCOMPONENTS)) {
+		AtlMessageBox(m_hWnd, L"Failed ro change kernel component levels.",
+			IDS_TITLE, MB_ICONERROR);
+	}
+
+	return 0;
 }
 

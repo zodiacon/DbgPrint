@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Interfaces.h"
+
 enum class DebugOutputFlags {
 	None = 0,
 	Kernel = 1,
@@ -31,7 +33,7 @@ struct DebugItem {
 	void* operator new(size_t size);
 	void operator delete(void* p);
 
-	DWORD Pid;
+	ProcessKey Process;
 	CString Text;
 	FILETIME SystemTime;
 	mutable CString LocalTimeAsString;

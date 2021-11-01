@@ -47,6 +47,8 @@ protected:
 		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREKERNEL, OnCaptureKernel)
 		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL, OnAutoScroll)
 		MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
+		COMMAND_ID_HANDLER(ID_KERNEL_ENABLEALLCOMPONENTS, OnEnableKernelComponents)
+		COMMAND_ID_HANDLER(ID_KERNEL_DISABLEALLCOMPONENTS, OnEnableKernelComponents)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		CHAIN_MSG_MAP_MEMBER(m_Menu)
@@ -83,6 +85,7 @@ private:
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	COwnerDrawnMenu<CMainFrame> m_Menu;
 	CTabView m_Tabs;

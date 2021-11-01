@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "MainFrm.h"
 #include "AppSettings.h"
+#include "SecurityHelper.h"
 
 CAppModule _Module;
 AppSettings _Settings;
@@ -36,6 +37,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	hRes = _Module.Init(nullptr, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
+
+	if (SecurityHelper::IsRunningElevated())
+		SecurityHelper::EnablePrivilege(SE_DEBUG_NAME);
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 

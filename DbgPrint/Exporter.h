@@ -2,9 +2,9 @@
 
 #include "DebugOutputBase.h"
 
-class Exporter {
+class Exporter final abstract {
 public:
-	Exporter(std::vector<std::shared_ptr<DebugItem>> const&);
-
+	bool Save(std::vector<std::unique_ptr<DebugItem>> const& items, PCWSTR file);
+	std::vector<std::unique_ptr<DebugItem>> Load(PCWSTR file);
 };
 

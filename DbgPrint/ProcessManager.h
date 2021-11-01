@@ -2,44 +2,42 @@
 
 #include <wil\resource.h>
 #include <shared_mutex>
+#include "Interfaces.h"
 
-struct ProcessKey {
-	DWORD ProcessId;
-	FILETIME StartTime{};
-	bool operator==(const ProcessKey& other) const {
-		return other.ProcessId == ProcessId && 
-			other.StartTime.dwLowDateTime == StartTime.dwLowDateTime && 
-			other.StartTime.dwHighDateTime == StartTime.dwLowDateTime;
-	}
+enum class ProcessInfoFlags {
+	None = 0,
+	FromFile = 1,
 };
-
-template<>
-struct std::hash<ProcessKey> {
-	size_t operator()(ProcessKey const& key) const {
-		return (key.ProcessId << 16LL) ^ key.StartTime.dwLowDateTime ^ (key.StartTime.dwHighDateTime << 16LL);
-	}
-};
+DEFINE_ENUM_FLAG_OPERATORS(ProcessInfoFlags);
 
 struct StaticProcessInfo : ProcessKey {
 	CString FullPath;
 	CString Name;
 	wil::unique_handle hProcess;
+	DWORD SessionId;
+	ProcessInfoFlags Flags{ ProcessInfoFlags::None };
 };
 
 class ProcessManager {
 public:
 	static ProcessManager& Get();
 
-	PCWSTR GetProcessName(DWORD pid) const;
+	CString GetProcessName(DWORD pid) const;
 	PCWSTR GetFullImagePath(DWORD pid) const;
+	ProcessKey GetProcessKey(DWORD pid) const;
+	StaticProcessInfo* const GetProcessInfo(ProcessKey const&) const;
+
+	std::vector<StaticProcessInfo*> GetRuntimeProcesses() const;
 
 private:
 	ProcessManager();
 	bool AddProcess(DWORD pid, PCWSTR path = nullptr) const;
 	void Init();
 	void AddProcessIfNotExist(DWORD pid) const;
+	void AddProcess(std::unique_ptr<StaticProcessInfo>& pi) const;
 
-	mutable std::unordered_map<DWORD, StaticProcessInfo> _processes;
+	mutable std::unordered_map<ProcessKey, std::shared_ptr<StaticProcessInfo>> _processesByKey;
+	mutable std::unordered_map<DWORD, std::shared_ptr<StaticProcessInfo>> _processes;
 	mutable std::shared_mutex _lock;
 };
 
