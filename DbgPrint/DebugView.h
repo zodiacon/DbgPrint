@@ -53,6 +53,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnProperties)
 		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnEditDelete)
 		COMMAND_ID_HANDLER(ID_EDIT_COMMENT, OnEditComment)
+		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, OnEditClearAll)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -74,6 +75,7 @@ private:
 	LRESULT OnItemChanged(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/);
 	LRESULT OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;

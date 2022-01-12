@@ -71,6 +71,8 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) {
 		{ ID_CAPTURE_CAPTURESESSION0, IDI_USER0 },
 		{ 0 },
 		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
+		{ 0 },
+		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)
@@ -137,9 +139,12 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UISetCheck(ID_VIEW_AUTOSCROLL, settings.AutoScroll());
 
 	if (!SecurityHelper::IsRunningElevated()) {
-		if (settings.CaptureSession0() || settings.CaptureKernel())
+		if (settings.CaptureSession0() || settings.CaptureKernel()) {
 			AtlMessageBox(m_hWnd, L"Running with standard user rights. Session 0 and Kernel captures will not be available.",
 				IDS_TITLE, MB_ICONWARNING);
+			settings.CaptureKernel(false);
+			settings.CaptureSession0(false);
+		}
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
 	}

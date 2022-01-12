@@ -347,3 +347,12 @@ LRESULT CDebugView::OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
+LRESULT CDebugView::OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	{
+		std::lock_guard locker(m_Lock);
+		m_Items.clear();
+	}
+	m_List.SetItemCount(0);
+	return 0;
+}
+
