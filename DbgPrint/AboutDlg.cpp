@@ -4,12 +4,12 @@
 
 #include "pch.h"
 #include "resource.h"
-#include "aboutdlg.h"
+#include "AboutDlg.h"
 
 LRESULT CAboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	CenterWindow(GetParent());
 	SetDialogIcon(IDR_MAINFRAME);
-	AdjustOKCancelButtons();
+	AdjustOKCancelButtons(IDI_OK, IDI_CANCEL);
 
 	return TRUE;
 }

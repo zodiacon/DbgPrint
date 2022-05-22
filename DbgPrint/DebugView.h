@@ -26,7 +26,7 @@ public:
 	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
 
 	int GetRowImage(HWND, int row, int col) const;
-	void DoSort(SortInfo* const);
+	void DoSort(SortInfo const*);
 	void Capture(bool capture);
 	void CaptureKernel(bool capture);
 	void CaptureUser(bool capture);

@@ -25,6 +25,7 @@ extern CAppModule _Module;
 #include <atlctrlw.h>
 #include <atlctrlx.h>
 #include <strsafe.h>
+#include <commoncontrols.h>
 #define INITGUID
 #include <tdh.h>
 #include <memory>

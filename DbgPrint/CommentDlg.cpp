@@ -4,7 +4,7 @@
 
 LRESULT CCommentDlg::OnInitDialog(UINT, WPARAM, LPARAM lp, BOOL&) {
     InitDynamicLayout();
-    AdjustOKCancelButtons();
+    AdjustOKCancelButtons(IDI_OK, IDI_CANCEL);
 
     auto hIcon = reinterpret_cast<HICON>(lp);
     if (hIcon)

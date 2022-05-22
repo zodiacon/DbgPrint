@@ -37,8 +37,6 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Message", LVCFMT_LEFT, 500, ColumnType::Text);
 	cm->AddColumn(L"Comment", LVCFMT_LEFT, 150, ColumnType::Comment);
 	cm->UpdateColumns();
-
-	m_List.DeleteColumn(0);
 	cm->DeleteColumn(0);
 
 	m_TempItems.reserve(128);
@@ -172,7 +170,7 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	m_TempItems.push_back(std::move(item));
 }
 
-void CDebugView::DoSort(SortInfo* const si) {
+void CDebugView::DoSort(SortInfo const* si) {
 	if (si == nullptr)
 		return;
 
@@ -205,6 +203,7 @@ void CDebugView::Capture(bool capture) {
 	else {
 		m_UserMode.Stop();
 		m_UserModeSession0.Stop();
+		m_KernelMode.Stop();
 	}
 }
 
@@ -255,7 +254,7 @@ LRESULT CDebugView::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	int n = -1;
 	CString text;
 	while ((n = m_List.GetNextItem(n, LVIS_SELECTED)) != -1) {
-		text += ListViewHelper::GetRowAsString(m_List, n, L',') + L"\n";
+		text += ListViewHelper::GetRowAsString(m_List, n, L",") + L"\n";
 	}
 	ClipboardHelper::CopyText(m_hWnd, text);
 	return 0;

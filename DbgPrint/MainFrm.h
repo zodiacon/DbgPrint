@@ -6,6 +6,7 @@
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
+	public COwnerDrawnMenu<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public IMainFrame,
 	public CMessageFilter, 
@@ -51,7 +52,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_KERNEL_DISABLEALLCOMPONENTS, OnEnableKernelComponents)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
-		CHAIN_MSG_MAP_MEMBER(m_Menu)
+		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
 	END_MSG_MAP()
 
 private:
@@ -87,7 +88,6 @@ private:
 	LRESULT OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	COwnerDrawnMenu<CMainFrame> m_Menu;
 	CTabView m_Tabs;
 	CDebugView* m_pActiveView;
 	CFont m_Font;

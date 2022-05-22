@@ -11,7 +11,7 @@
 #include "AppSettings.h"
 #include "Helpers.h"
 
-CMainFrame::CMainFrame() : m_Menu(this) {
+CMainFrame::CMainFrame() {
 }
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
@@ -24,7 +24,7 @@ BOOL CMainFrame::OnIdle() {
 }
 
 void CMainFrame::InitMenu() {
-	m_Menu.AddMenu(GetMenu());
+	AddMenu(GetMenu());
 	struct {
 		UINT id, icon;
 		HICON hIcon = nullptr;
@@ -44,9 +44,9 @@ void CMainFrame::InitMenu() {
 	};
 	for (auto& cmd : cmds) {
 		if (cmd.icon)
-			m_Menu.AddCommand(cmd.id, cmd.icon);
+			AddCommand(cmd.id, cmd.icon);
 		else
-			m_Menu.AddCommand(cmd.id, cmd.hIcon);
+			AddCommand(cmd.id, cmd.hIcon);
 	}
 }
 
@@ -92,7 +92,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
 		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
 	}
-	m_Menu.SetCheckIcon(AtlLoadIconImage(IDI_OK));
+	SetCheckIcon(AtlLoadIconImage(IDI_OK));
 
 	auto& settings = AppSettings::Get();
 	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DbgPrint");
@@ -289,7 +289,7 @@ LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 }
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
-	return m_Menu.TrackPopupMenu(hMenu, flags, x, y, hWnd);
+	return ShowContextMenu(hMenu, flags, x, y, hWnd);
 }
 
 LRESULT CMainFrame::OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

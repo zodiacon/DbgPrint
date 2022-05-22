@@ -11,7 +11,7 @@ CPropertiesDlg::CPropertiesDlg(DebugItem const& item) : m_Item(item) {
 
 LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout();
-    AdjustOKCancelButtons();
+    AdjustOKCancelButtons(IDI_OK, IDI_CANCEL);
 
     AppSettings::Get().LoadWindowPosition(m_hWnd, L"PropertiesDlg");
 
