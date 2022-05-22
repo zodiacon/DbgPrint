@@ -6,12 +6,14 @@ LRESULT CCommentDlg::OnInitDialog(UINT, WPARAM, LPARAM lp, BOOL&) {
     InitDynamicLayout();
     AdjustOKCancelButtons(IDI_OK, IDI_CANCEL);
 
+    m_Edit.Attach(GetDlgItem(IDC_COMMENT));
+
     auto hIcon = reinterpret_cast<HICON>(lp);
     if (hIcon)
         SetDialogIcon(hIcon);
 
-    SetDlgItemText(IDC_COMMENT, m_Comment);
-
+    m_Edit.SetWindowTextW(m_Comment);
+    
     return 0;
 }
 

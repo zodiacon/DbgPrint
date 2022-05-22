@@ -102,9 +102,9 @@ BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
         MENUITEM "&Fonts...",                   ID_OPTIONS_FONTS
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
-        MENUITEM "Confirm &Delete",             ID_OPTIONS_CONFIRMDELETE
+        MENUITEM "Confirm &Erase",              ID_OPTIONS_CONFIRMDELETE
     END
-    POPUP "&Windows"
+    POPUP "&Tab"
     BEGIN
         MENUITEM "&Close",                      ID_WINDOWS_CLOSE
         MENUITEM "Close &All",                  ID_WINDOWS_CLOSEALL
@@ -120,7 +120,7 @@ BEGIN
     POPUP "list"
     BEGIN
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "Co&mment...",                 ID_EDIT_COMMENT
+        MENUITEM "Co&mment...\tCtrl+M",         ID_EDIT_COMMENT
         MENUITEM SEPARATOR
         MENUITEM "&Delete\tDel",                ID_EDIT_DELETE
         MENUITEM SEPARATOR
@@ -188,7 +188,7 @@ CAPTION "About Debug Print"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,68,52,50,14
-    LTEXT           "Debug Print v0.1\n\n©2021 Pavel Yosifovich",IDC_STATIC,52,10,128,26
+    CTEXT           "Debug Print v0.1\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,41,10,111,26
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
 END
 
@@ -206,7 +206,7 @@ BEGIN
     LTEXT           "Image Path:",IDC_STATIC,7,57,40,8
     EDITTEXT        IDC_PATH,51,55,272,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER,WS_EX_STATICEDGE
     LTEXT           "Text:",IDC_STATIC,7,79,18,8
-    EDITTEXT        IDC_TEXT,51,77,271,52,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
+    EDITTEXT        IDC_TEXT,51,77,271,52,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | WS_VSCROLL | WS_HSCROLL
     LTEXT           "Comment:",IDC_STATIC,7,139,34,8
     EDITTEXT        IDC_COMMENT,51,138,271,27,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
     LTEXT           "Index:",IDC_STATIC,23,13,22,8
@@ -221,7 +221,7 @@ CAPTION "Comment"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Comment Text:",IDC_STATIC,7,9,50,8
-    EDITTEXT        IDC_COMMENT,7,25,295,70,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL
+    EDITTEXT        IDC_COMMENT,7,25,295,70,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
     DEFPUSHBUTTON   "OK",IDOK,96,115,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,162,115,50,14
 END
@@ -269,20 +269,22 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
-    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
-    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
-    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
-    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
-    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
-    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
-    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
-    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
-    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
-    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
-    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
-    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
-    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    "M",            ID_EDIT_COMMENT,        VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
 END
 
 
@@ -311,7 +313,7 @@ BEGIN
             VALUE "FileDescription", "Debug User/Kernel Output"
             VALUE "FileVersion", "0.1.0.0"
             VALUE "InternalName", "DbgPrint"
-            VALUE "LegalCopyright", "©2021 Pavel Yosifovich"
+            VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
             VALUE "OriginalFilename", "DbgPrint.exe"
             VALUE "ProductName", "Debug Print"
             VALUE "ProductVersion", "0.1.0.0"

@@ -37,7 +37,7 @@ public:
 	void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags) override;
 
 protected:
-	BEGIN_MSG_MAP(CMainFrame)
+	BEGIN_MSG_MAP(CDebugView)
 		MESSAGE_HANDLER(WM_TIMER, OnTimer)
 		NOTIFY_CODE_HANDLER(LVN_ODFINDITEM, OnFindItem)
 		NOTIFY_CODE_HANDLER(LVN_ITEMCHANGED, OnItemChanged)
@@ -86,5 +86,6 @@ private:
 	inline static ULONG s_Index;
 	CUpdateUIBase* m_ui{ nullptr };
 	IMainFrame* m_pFrame;
+	bool m_Running{ false };
 };
 

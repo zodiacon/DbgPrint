@@ -194,28 +194,37 @@ void CDebugView::DoSort(SortInfo const* si) {
 
 void CDebugView::Capture(bool capture) {
 	if (capture) {
-		auto& settings = AppSettings::Get();
+		auto const& settings = AppSettings::Get();
 		if (settings.CaptureUserMode())
 			m_UserMode.Run(this);
 		if (settings.CaptureSession0())
 			m_UserModeSession0.Run(this);
+		if (settings.CaptureKernel())
+			m_KernelMode.Run(this);
 	}
 	else {
 		m_UserMode.Stop();
 		m_UserModeSession0.Stop();
 		m_KernelMode.Stop();
 	}
+	m_Running = capture;
 }
 
 void CDebugView::CaptureKernel(bool capture) {
+	if (!m_Running)
+		return;
 	capture ? m_KernelMode.Run(this) : m_KernelMode.Stop();
 }
 
 void CDebugView::CaptureUser(bool capture) {
+	if (!m_Running)
+		return;
 	capture ? m_UserMode.Run(this) : m_UserMode.Stop();
 }
 
 void CDebugView::CaptureSession0(bool capture) {
+	if (!m_Running)
+		return;
 	capture ? m_UserModeSession0.Run(this) : m_UserModeSession0.Stop();
 }
 
@@ -251,12 +260,7 @@ LRESULT CDebugView::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 LRESULT CDebugView::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int n = -1;
-	CString text;
-	while ((n = m_List.GetNextItem(n, LVIS_SELECTED)) != -1) {
-		text += ListViewHelper::GetRowAsString(m_List, n, L",") + L"\n";
-	}
-	ClipboardHelper::CopyText(m_hWnd, text);
+	ClipboardHelper::CopyText(m_hWnd, ListViewHelper::GetSelectedRowsAsString(m_List, L","));
 	return 0;
 }
 
@@ -268,9 +272,9 @@ LRESULT CDebugView::OnSetFont(UINT, WPARAM wp, LPARAM, BOOL&) {
 LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CSimpleFileDialog dlg(FALSE, L"txt", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
 		L"Text Files (*.txt)\0*.txt\0All Files\0*.*\0", m_hWnd);
-	auto columns = m_List.GetHeader().GetItemCount();
-	if (dlg.DoModal() == IDOK) {
+	if (IDOK == dlg.DoModal()) {
 		CString text;
+		auto columns = m_List.GetHeader().GetItemCount();
 		for (int i = 0; i < m_List.GetItemCount(); i++) {
 			CString item;
 			for (int c = 0; c < columns; c++) {
@@ -283,13 +287,12 @@ LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 			}
 			text += L"\n";
 		}
-		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr));
+		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, 0, nullptr));
 		if (!hFile) {
 			Helpers::ReportError(L"Error: ");
 			return 0;
 		}
-		DWORD bytes;
-		if (!::WriteFile(hFile.get(), text.GetBuffer(), text.GetLength() * sizeof(WCHAR), &bytes, nullptr)) {
+		if (DWORD bytes; !::WriteFile(hFile.get(), text.GetBuffer(), text.GetLength() * sizeof(WCHAR), &bytes, nullptr)) {
 			Helpers::ReportError(L"Error: ");
 			return 0;
 		}

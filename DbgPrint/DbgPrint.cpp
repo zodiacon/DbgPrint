@@ -6,6 +6,7 @@
 #include "MainFrm.h"
 #include "AppSettings.h"
 #include "SecurityHelper.h"
+#include <ThemeHelper.h>
 
 CAppModule _Module;
 AppSettings _Settings;
@@ -41,6 +42,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (SecurityHelper::IsRunningElevated())
 		SecurityHelper::EnablePrivilege(SE_DEBUG_NAME);
 
+	ThemeHelper::Init();
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
 	_Module.Term();

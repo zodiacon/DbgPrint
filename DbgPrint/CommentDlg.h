@@ -33,4 +33,5 @@ private:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CString m_Comment;
+	CEdit m_Edit;
 };

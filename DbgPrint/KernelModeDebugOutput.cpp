@@ -80,6 +80,8 @@ bool KernelModeDebugOutput::Stop() {
 		::CloseTrace(m_hTrace);
 		m_hTrace = 0;
 	}
+	if (WAIT_TIMEOUT == ::WaitForSingleObject(m_hThread.get(), 1000))
+		DebugBreak();
 	m_hThread.reset();
 	return true;
 }

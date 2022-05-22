@@ -11,9 +11,6 @@
 #include "AppSettings.h"
 #include "Helpers.h"
 
-CMainFrame::CMainFrame() {
-}
-
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
@@ -38,6 +35,7 @@ void CMainFrame::InitMenu() {
 		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
 		{ ID_FILE_SAVE, IDI_SAVEAS },
 		{ ID_FILE_OPEN, IDI_OPEN },
+		{ ID_VIEW_AUTOSCROLL, IDI_AUTOSCROLL },
 		{ ID_EDIT_DELETE, IDI_CANCEL },
 		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
 		{ ID_EDIT_COMMENT, IDI_COMMENT },
@@ -50,7 +48,7 @@ void CMainFrame::InitMenu() {
 	}
 }
 
-void CMainFrame::InitToolBar(CToolBarCtrl& tb) {
+void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
 	const int size = 24;
 	CImageList tbImages;
 	tbImages.Create(size, size, ILC_COLOR32, 8, 4);
@@ -200,7 +198,7 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) const {
 	CAboutDlg dlg;
 	dlg.DoModal();
 	return 0;
@@ -273,18 +271,18 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 }
 
 void CMainFrame::UpdateUI() {
-	auto active = m_Tabs && m_Tabs.GetActivePage() >= 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
-	auto& settings = AppSettings::Get();
+	auto active = m_Tabs && m_Tabs.GetPageCount() > 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
 	if (SecurityHelper::IsRunningElevated()) {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
 	}
-	m_pActiveView->UpdateUI(this);
+	if(active)
+		m_pActiveView->UpdateUI(this);
 }
 
-LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) const {
 	return 0;
 }
 
@@ -300,7 +298,7 @@ LRESULT CMainFrame::OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD wID, HWN
 	}
 
 	if (!Helpers::EnableAllkernelOutput(wID == ID_KERNEL_ENABLEALLCOMPONENTS)) {
-		AtlMessageBox(m_hWnd, L"Failed ro change kernel component levels.",
+		AtlMessageBox(m_hWnd, L"Failed to change kernel component levels.",
 			IDS_TITLE, MB_ICONERROR);
 	}
 
