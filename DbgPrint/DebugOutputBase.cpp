@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "DebugOutputBase.h"
 
-HANDLE g_hHeap = ::HeapCreate(0, 2 << 20, 0);
+HANDLE g_hHeap = ::HeapCreate(0, 1 << 20, 0);
 
 void* DebugItem::operator new(size_t size) {
 	ATLASSERT(g_hHeap);

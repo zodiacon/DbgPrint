@@ -24,11 +24,9 @@
 #define IDI_ATOM                        217
 #define IDR_CONTEXT                     218
 #define IDI_ERASE                       219
-#define IDI_ICON3                       220
 #define IDI_USERMODE                    220
 #define IDD_PROPERTIES                  221
 #define IDD_COMMENT                     223
-#define IDI_ICON1                       225
 #define IDI_COMMENT                     225
 #define IDC_PID                         1000
 #define IDC_NAME                        1001

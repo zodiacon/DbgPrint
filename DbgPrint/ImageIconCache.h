@@ -18,7 +18,7 @@ private:
 	ImageIconCache& operator=(const ImageIconCache&) = delete;
 
 private:
-	mutable CImageList _images;
-	mutable Map _icons;
-	mutable std::shared_mutex _lock;
+	mutable CImageList m_images;
+	mutable Map m_icons;
+	mutable std::shared_mutex m_lock;
 };

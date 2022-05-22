@@ -14,12 +14,12 @@ protected:
 	DWORD Process();
 
 private:
-	IDebugOutput* _sink;
-	TRACEHANDLE _handle{ 0 };
-	TRACEHANDLE _hTrace{ 0 };
-	EVENT_TRACE_PROPERTIES* _properties;
-	std::unique_ptr<BYTE[]> _propertiesBuffer;
-	EVENT_TRACE_LOGFILE _traceLog = { 0 };
-	wil::unique_handle _hThread, _hStop;
+	IDebugOutput* m_sink;
+	TRACEHANDLE m_handle{ 0 };
+	TRACEHANDLE m_hTrace{ 0 };
+	EVENT_TRACE_PROPERTIES* m_properties;
+	std::unique_ptr<BYTE[]> m_propertiesBuffer;
+	EVENT_TRACE_LOGFILE m_traceLog = { 0 };
+	wil::unique_handle m_hThread, m_hStop;
 };
 

@@ -319,7 +319,6 @@ LRESULT CDebugView::OnItemChanged(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*
 
 LRESULT CDebugView::OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int n = -1;
-	CString text;
 	int offset = 0;
 	{
 		std::lock_guard locker(m_Lock);

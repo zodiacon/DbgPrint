@@ -15,9 +15,9 @@ public:
 private:
 	DWORD DebugListen();
 
-	wil::unique_handle _hDataReady, _hMemFile, _hBufferReady, _hThread, _hStop;
-	PBYTE _buffer{ nullptr };
-	CString _prefix;
-	IDebugOutput* _sink;
+	wil::unique_handle m_hDataReady, m_hMemFile, m_hBufferReady, m_hThread, m_hStop;
+	PBYTE m_buffer{ nullptr };
+	CString m_prefix;
+	IDebugOutput* m_sink;
 };
 

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "UserModeDebugOutput.h"
 
-UserModeDebugOutput::UserModeDebugOutput(PCWSTR prefix) : _prefix(prefix) {
+UserModeDebugOutput::UserModeDebugOutput(PCWSTR prefix) : m_prefix(prefix) {
 }
 
 UserModeDebugOutput::~UserModeDebugOutput() {
@@ -9,65 +9,65 @@ UserModeDebugOutput::~UserModeDebugOutput() {
 }
 
 bool UserModeDebugOutput::Run(IDebugOutput* sink) {
-	_sink = sink;
-	_hStop.reset(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
-	if (!_hStop)
+	m_sink = sink;
+	m_hStop.reset(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
+	if (!m_hStop)
 		return false;
 
-	if (!_hBufferReady) {
-		_hBufferReady.reset(::CreateEvent(nullptr, FALSE, FALSE, _prefix + L"\\DBWIN_BUFFER_READY"));
-		if (!_hBufferReady)
+	if (!m_hBufferReady) {
+		m_hBufferReady.reset(::CreateEvent(nullptr, FALSE, FALSE, m_prefix + L"\\DBWIN_BUFFER_READY"));
+		if (!m_hBufferReady)
 			return false;
 	}
 
-	if (!_hDataReady) {
-		_hDataReady.reset(::CreateEvent(nullptr, FALSE, FALSE, _prefix + L"\\DBWIN_DATA_READY"));
-		if (!_hDataReady)
+	if (!m_hDataReady) {
+		m_hDataReady.reset(::CreateEvent(nullptr, FALSE, FALSE, m_prefix + L"\\DBWIN_DATA_READY"));
+		if (!m_hDataReady)
 			return false;
 	}
 
 	DWORD size = 1 << 12;	// 4KB
-	if (!_hMemFile) {
-		_hMemFile.reset(::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, _prefix + L"\\DBWIN_BUFFER"));
-		if (_hMemFile == nullptr)
+	if (!m_hMemFile) {
+		m_hMemFile.reset(::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, m_prefix + L"\\DBWIN_BUFFER"));
+		if (m_hMemFile == nullptr)
 			return false;
 	}
 
-	if (!_buffer) {
-		_buffer = (PBYTE)::MapViewOfFile(_hMemFile.get(), FILE_MAP_READ, 0, 0, 0);
-		if (_buffer == nullptr)
+	if (!m_buffer) {
+		m_buffer = (PBYTE)::MapViewOfFile(m_hMemFile.get(), FILE_MAP_READ, 0, 0, 0);
+		if (m_buffer == nullptr)
 			return false;
 	}
 
-	_hThread.reset(::CreateThread(nullptr, 0, [](auto p) {
+	m_hThread.reset(::CreateThread(nullptr, 0, [](auto p) {
 		return ((UserModeDebugOutput*)p)->DebugListen();
 		}, this, 0, nullptr));
-	return _hThread != nullptr;
+	return m_hThread != nullptr;
 }
 
 bool UserModeDebugOutput::Stop() {
-	if (!_hStop)
+	if (!m_hStop)
 		return false;
 
-	if (_hThread == nullptr)
+	if (m_hThread == nullptr)
 		return true;
 
-	auto rv = ::SignalObjectAndWait(_hStop.get(), _hThread.get(), 2000, FALSE);
-	_hThread.reset();
+	auto rv = ::SignalObjectAndWait(m_hStop.get(), m_hThread.get(), 2000, FALSE);
+	m_hThread.reset();
 
 	return rv == WAIT_OBJECT_0;
 }
 
 bool UserModeDebugOutput::IsRunning() const {
-	return ::WaitForSingleObject(_hThread.get(), 0) == WAIT_TIMEOUT;
+	return ::WaitForSingleObject(m_hThread.get(), 0) == WAIT_TIMEOUT;
 }
 
 DWORD UserModeDebugOutput::DebugListen() {
 	::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	HANDLE h[] = { _hStop.get(), _hDataReady.get() };
+	HANDLE h[] = { m_hStop.get(), m_hDataReady.get() };
 
 	while (true) {
-		::SetEvent(_hBufferReady.get());
+		::SetEvent(m_hBufferReady.get());
 		auto rv = ::WaitForMultipleObjects(_countof(h), h, FALSE, INFINITE);
 		if (rv == WAIT_OBJECT_0)
 			break;
@@ -76,8 +76,8 @@ DWORD UserModeDebugOutput::DebugListen() {
 
 		FILETIME st;
 		::GetSystemTimeAsFileTime(&st);
-		DWORD pid = *(DWORD*)_buffer;
-		_sink->DebugOutput(pid, (PCSTR)(_buffer + sizeof(DWORD)), st);
+		DWORD pid = *(DWORD*)m_buffer;
+		m_sink->DebugOutput(pid, (PCSTR)(m_buffer + sizeof(DWORD)), st);
 	}
 
 	return 0;
