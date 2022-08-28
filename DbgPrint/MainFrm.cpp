@@ -272,6 +272,8 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 
 void CMainFrame::UpdateUI() {
 	auto active = m_Tabs && m_Tabs.GetPageCount() > 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
+	UIEnable(ID_WINDOWS_CLOSE, active && !m_pActiveView->IsRealTime());
+	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
 	if (SecurityHelper::IsRunningElevated()) {
@@ -304,4 +306,23 @@ LRESULT CMainFrame::OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD wID, HWN
 
 	return 0;
 }
+
+LRESULT CMainFrame::OnTabClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int page = m_Tabs.GetActivePage();
+	ATLASSERT(page >= 0);
+	if (page < 0)
+		return 0;
+
+	auto view = (CDebugView*)m_Tabs.GetPageData(page);
+	if (view->CanClose())
+		m_Tabs.RemovePage(page);
+	return 0;
+}
+
+LRESULT CMainFrame::OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	while (m_Tabs.GetPageCount() > 0)
+		SendMessage(WM_COMMAND, ID_WINDOWS_CLOSE);
+	return 0;
+}
+
 

@@ -23,7 +23,15 @@ LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetDlgItemText(IDC_TIME, m_Item.LocalTimeAsString);
     SetDlgItemText(IDC_NAME, m_Item.ProcessName);
     SetDlgItemText(IDC_PATH, ProcessManager::Get().GetProcessInfo(m_Item.Process)->FullPath);
-    SetDlgItemText(IDC_TEXT, m_Item.Text);
+    int start = 0;
+    CString text = m_Item.Text;
+    while ((start = text.Find(L"\n", start)) >= 0) {
+        if(text[start + 1] != L'\r')
+            text = text.Left(start) + L"\r\n" + text.Mid(start + 1);
+        start += 2;
+    }
+
+    SetDlgItemText(IDC_TEXT, text);
     SetDlgItemText(IDC_COMMENT, m_Item.Comment);
 
     return 0;

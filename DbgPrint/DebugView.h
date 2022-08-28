@@ -24,6 +24,8 @@ public:
 	bool IsSortable(HWND, int col) const;
 	BOOL OnDoubleClickList(HWND, int row, int col, POINT const& pt);
 	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
+	bool CanClose();
+	bool IsRealTime() const;
 
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const*);
@@ -87,5 +89,6 @@ private:
 	CUpdateUIBase* m_ui{ nullptr };
 	IMainFrame* m_pFrame;
 	bool m_Running{ false };
+	bool m_RealTime;
 };
 

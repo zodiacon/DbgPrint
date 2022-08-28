@@ -10,8 +10,9 @@
 #include "Helpers.h"
 #include "PropertiesDlg.h"
 #include "CommentDlg.h"
+#include <ThemeHelper.h>
 
-CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame) {
+CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
 }
 
 void CDebugView::UpdateList() {
@@ -156,8 +157,16 @@ BOOL CDebugView::OnRightClickList(HWND, int row, int col, POINT const& pt) {
 	return m_pFrame->TrackPopupMenu(menu.GetSubMenu(0), 0, pt.x, pt.y);
 }
 
+bool CDebugView::CanClose() {
+	return !m_RealTime;
+}
+
+bool CDebugView::IsRealTime() const {
+	return m_RealTime;
+}
+
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
-	auto& pm = ProcessManager::Get();
+	auto const& pm = ProcessManager::Get();
 	auto item = std::make_unique<DebugItem>();
 	item->ProcessName = pm.GetProcessName(pid);
 	item->Process = pm.GetProcessKey(pid);
@@ -189,7 +198,7 @@ void CDebugView::DoSort(SortInfo const* si) {
 	};
 
 	std::lock_guard locker(m_Lock);
-	std::sort(m_Items.begin(), m_Items.end(), compare);
+	std::ranges::sort(m_Items, compare);
 }
 
 void CDebugView::Capture(bool capture) {
@@ -232,9 +241,10 @@ void CDebugView::UpdateUI(CUpdateUIBase* ui) {
 	if (m_ui == nullptr)
 		m_ui = ui;
 
-	ui->UIEnable(ID_VIEW_PROPERTIES, m_List.GetSelectedCount() == 1);
-	ui->UIEnable(ID_EDIT_DELETE, m_List.GetSelectedCount() > 0);
-	ui->UIEnable(ID_EDIT_COPY, m_List.GetSelectedCount() > 0);
+	auto selectedCount = m_List.GetSelectedCount();
+	ui->UIEnable(ID_VIEW_PROPERTIES, selectedCount == 1);
+	ui->UIEnable(ID_EDIT_DELETE, selectedCount > 0);
+	ui->UIEnable(ID_EDIT_COPY, selectedCount > 0);
 }
 
 int CDebugView::GetRowImage(HWND h, int row, int col) const {
@@ -272,7 +282,10 @@ LRESULT CDebugView::OnSetFont(UINT, WPARAM wp, LPARAM, BOOL&) {
 LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CSimpleFileDialog dlg(FALSE, L"txt", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
 		L"Text Files (*.txt)\0*.txt\0All Files\0*.*\0", m_hWnd);
-	if (IDOK == dlg.DoModal()) {
+	ThemeHelper::Suspend();
+	auto ok = IDOK == dlg.DoModal();
+	ThemeHelper::Resume();
+	if(ok) {
 		CString text;
 		auto columns = m_List.GetHeader().GetItemCount();
 		for (int i = 0; i < m_List.GetItemCount(); i++) {

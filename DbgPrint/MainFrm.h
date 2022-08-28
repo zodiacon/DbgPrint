@@ -50,9 +50,12 @@ protected:
 		MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
 		COMMAND_ID_HANDLER(ID_KERNEL_ENABLEALLCOMPONENTS, OnEnableKernelComponents)
 		COMMAND_ID_HANDLER(ID_KERNEL_DISABLEALLCOMPONENTS, OnEnableKernelComponents)
+		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSE, OnTabClose)
+		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSEALL, OnTabCloseAll)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
+		REFLECT_NOTIFICATIONS_EX()
 	END_MSG_MAP()
 
 private:
@@ -61,6 +64,7 @@ private:
 	void InitToolBar(CToolBarCtrl& tb) const;
 	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
+	void InitDarkMode();
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -86,6 +90,8 @@ private:
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTabClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_Tabs;
 	CDebugView* m_pActiveView;
