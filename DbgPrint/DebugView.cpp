@@ -245,6 +245,7 @@ void CDebugView::UpdateUI(CUpdateUIBase* ui) {
 	ui->UIEnable(ID_VIEW_PROPERTIES, selectedCount == 1);
 	ui->UIEnable(ID_EDIT_DELETE, selectedCount > 0);
 	ui->UIEnable(ID_EDIT_COPY, selectedCount > 0);
+	ui->UIEnable(ID_EDIT_COMMENT, selectedCount == 1);
 }
 
 int CDebugView::GetRowImage(HWND h, int row, int col) const {
