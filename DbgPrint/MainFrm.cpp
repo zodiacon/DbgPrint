@@ -10,6 +10,7 @@
 #include "SecurityHelper.h"
 #include "AppSettings.h"
 #include "Helpers.h"
+#include <ThemeHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
@@ -85,6 +86,7 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	InitDarkTheme();
 	if (SecurityHelper::IsRunningElevated()) {
 		CMenuHandle menu(GetMenu());
 		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
@@ -118,8 +120,6 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UISetCheck(ID_VIEW_TOOLBAR, settings.ViewToolBar());
 	UISetCheck(ID_VIEW_STATUS_BAR, settings.ViewStatusBar());
 
-	SetAlwaysOnTop(settings.AlwaysOnTop());
-
 	m_Tabs.m_bTabCloseButton = false;
 	m_hWndClient = m_Tabs.Create(m_hWnd, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	m_Tabs.SetWindowMenu(CMenuHandle(GetMenu()).GetSubMenu(7));
@@ -152,6 +152,9 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_pActiveView = view;
 	view->Capture(AppSettings::Get().Capture());
 	m_Tabs.AddPage(view->m_hWnd, L"Real-time Log", 0, view);
+
+	SetAlwaysOnTop(settings.AlwaysOnTop());
+	SetDarkMode(AppSettings::Get().DarkMode());
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -326,4 +329,39 @@ LRESULT CMainFrame::OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
+void CMainFrame::InitDarkTheme() {
+	m_DarkTheme.BackColor = m_DarkTheme.SysColors[COLOR_WINDOW] = RGB(32, 32, 32);
+	m_DarkTheme.TextColor = m_DarkTheme.SysColors[COLOR_WINDOWTEXT] = RGB(248, 248, 248);
+	m_DarkTheme.SysColors[COLOR_HIGHLIGHT] = RGB(10, 10, 160);
+	m_DarkTheme.SysColors[COLOR_HIGHLIGHTTEXT] = RGB(240, 240, 240);
+	m_DarkTheme.SysColors[COLOR_MENUTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_BTNFACE] = m_DarkTheme.BackColor;
+	m_DarkTheme.SysColors[COLOR_BTNTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_3DLIGHT] = RGB(192, 192, 192);
+	m_DarkTheme.SysColors[COLOR_BTNHIGHLIGHT] = RGB(192, 192, 192);
+	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_3DSHADOW] = m_DarkTheme.TextColor;
+	m_DarkTheme.SysColors[COLOR_SCROLLBAR] = m_DarkTheme.BackColor;
+	m_DarkTheme.Name = L"Dark";
+	m_DarkTheme.Menu.BackColor = m_DarkTheme.BackColor;
+	m_DarkTheme.Menu.TextColor = m_DarkTheme.TextColor;
+	m_DarkTheme.StatusBar.BackColor = m_DarkTheme.BackColor;
+	m_DarkTheme.StatusBar.TextColor = m_DarkTheme.TextColor;
+}
 
+LRESULT CMainFrame::OnDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto dark = !AppSettings::Get().DarkMode();
+	AppSettings::Get().DarkMode(dark);
+	SetDarkMode(dark);
+	return 0;
+}
+
+void CMainFrame::SetDarkMode(bool dark) {
+	ThemeHelper::SetCurrentTheme(dark ? m_DarkTheme : m_DefaultTheme, m_hWnd);
+	ThemeHelper::UpdateMenuColors(*this, dark);
+	UpdateMenu(GetMenu(), true);
+	DrawMenuBar();
+
+	UISetCheck(ID_OPTIONS_DARKMODE, dark);
+}

@@ -52,6 +52,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_KERNEL_DISABLEALLCOMPONENTS, OnEnableKernelComponents)
 		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSE, OnTabClose)
 		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSEALL, OnTabCloseAll)
+		COMMAND_ID_HANDLER(ID_OPTIONS_DARKMODE, OnDarkMode)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
 		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
@@ -64,7 +65,8 @@ private:
 	void InitToolBar(CToolBarCtrl& tb) const;
 	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
-	void InitDarkMode();
+	void InitDarkTheme();
+	void SetDarkMode(bool dark);
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -92,9 +94,10 @@ private:
 	LRESULT OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTabClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_Tabs;
 	CDebugView* m_pActiveView;
 	CFont m_Font;
-	Theme m_DarkTheme;
+	Theme m_DarkTheme, m_DefaultTheme{ true };
 };
