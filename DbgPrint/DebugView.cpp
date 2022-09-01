@@ -45,17 +45,6 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 	SetTimer(1, 1000);
 
-	auto& settings = AppSettings::Get();
-	if (settings.Capture()) {
-		if (settings.CaptureUserMode())
-			m_UserMode.Run(this);
-		if (SecurityHelper::IsRunningElevated()) {
-			if (settings.CaptureSession0())
-				m_UserModeSession0.Run(this);
-			if (settings.CaptureKernel())
-				m_KernelMode.Run(this);
-		}
-	}
 	return 0;
 }
 
@@ -166,6 +155,9 @@ bool CDebugView::IsRealTime() const {
 }
 
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
+	if (!m_Running)
+		return;
+
 	auto const& pm = ProcessManager::Get();
 	auto item = std::make_unique<DebugItem>();
 	item->ProcessName = pm.GetProcessName(pid);
@@ -202,6 +194,7 @@ void CDebugView::DoSort(SortInfo const* si) {
 }
 
 void CDebugView::Capture(bool capture) {
+	m_Running = capture;
 	if (capture) {
 		auto const& settings = AppSettings::Get();
 		if (settings.CaptureUserMode())
@@ -216,7 +209,6 @@ void CDebugView::Capture(bool capture) {
 		m_UserModeSession0.Stop();
 		m_KernelMode.Stop();
 	}
-	m_Running = capture;
 }
 
 void CDebugView::CaptureKernel(bool capture) {

@@ -150,6 +150,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	view->SetFont(m_Font);
 	m_pActiveView = view;
+	view->Capture(AppSettings::Get().Capture());
 	m_Tabs.AddPage(view->m_hWnd, L"Real-time Log", 0, view);
 
 	// register object for message filtering and idle updates

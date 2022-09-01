@@ -88,7 +88,7 @@ private:
 	inline static ULONG s_Index;
 	CUpdateUIBase* m_ui{ nullptr };
 	IMainFrame* m_pFrame;
-	bool m_Running{ false };
+	std::atomic<bool> m_Running{ false };
 	bool m_RealTime;
 };
 
