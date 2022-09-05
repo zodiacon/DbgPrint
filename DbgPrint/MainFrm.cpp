@@ -156,8 +156,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	SetAlwaysOnTop(settings.AlwaysOnTop());
 	SetDarkMode(AppSettings::Get().DarkMode());
 
-	// register object for message filtering and idle updates
-	CMessageLoop* pLoop = _Module.GetMessageLoop();
+	auto pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
@@ -168,8 +167,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	AppSettings::Get().SaveToKey();
 
-	// unregister message filtering and idle updates
-	CMessageLoop* pLoop = _Module.GetMessageLoop();
+	auto pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
@@ -184,7 +182,7 @@ LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	static BOOL bVisible = TRUE;	// initially visible
+	static bool bVisible = true;	// initially visible
 	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
 	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST);	// toolbar is first 1st band
@@ -195,7 +193,7 @@ LRESULT CMainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BOOL bVisible = !::IsWindowVisible(m_hWndStatusBar);
+	auto bVisible = !::IsWindowVisible(m_hWndStatusBar);
 	::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 	UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
 	UpdateLayout();
@@ -280,6 +278,7 @@ void CMainFrame::UpdateUI() {
 	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
+	UIEnable(ID_SEARCH_FIND, active && m_pActiveView && !m_pActiveView->IsEmpty());
 	if (SecurityHelper::IsRunningElevated()) {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
@@ -365,3 +364,5 @@ void CMainFrame::SetDarkMode(bool dark) {
 
 	UISetCheck(ID_OPTIONS_DARKMODE, dark);
 }
+
+

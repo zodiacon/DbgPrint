@@ -182,14 +182,17 @@ IDI_COMMENT             ICON                    "res\\comment.ico"
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 187, 73
+IDD_ABOUTBOX DIALOGEX 0, 0, 187, 87
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Debug Print"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,68,52,50,14
-    CTEXT           "Debug Print v0.2\n\n©2021-2022 Pavel Yosifovich",IDC_STATIC,41,10,111,26
+    DEFPUSHBUTTON   "OK",IDOK,68,66,50,14
+    CTEXT           "Debug Print v0.2",IDC_VERSION,41,10,111,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    CONTROL         "<a>https://github.com/zodiacon/dbgprint</a>",IDC_LINK,
+                    "SysLink",WS_TABSTOP,33,39,130,14
+    CTEXT           "Debug Print v0.2",IDC_COPYRIGHT,39,23,111,11
 END
 
 IDD_PROPERTIES DIALOGEX 0, 0, 329, 202
@@ -240,7 +243,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 180
         TOPMARGIN, 7
-        BOTTOMMARGIN, 66
+        BOTTOMMARGIN, 79
     END
 
     IDD_PROPERTIES, DIALOG

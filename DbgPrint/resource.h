@@ -35,6 +35,10 @@
 #define IDC_COMMENT                     1004
 #define IDC_INDEX                       1005
 #define IDC_TIME                        1006
+#define IDC_LINK                        1008
+#define IDC_VERSION                     1009
+#define IDC_VERSION2                    1010
+#define IDC_COPYRIGHT                   1010
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
 #define ID_OPTIONS_FONTS                32777
@@ -63,7 +67,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        226
 #define _APS_NEXT_COMMAND_VALUE         32801
-#define _APS_NEXT_CONTROL_VALUE         1008
+#define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

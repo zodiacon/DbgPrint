@@ -154,6 +154,10 @@ bool CDebugView::IsRealTime() const {
 	return m_RealTime;
 }
 
+bool CDebugView::IsEmpty() const {
+	return m_Items.empty();
+}
+
 void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
 	if (!m_Running)
 		return;
@@ -363,3 +367,6 @@ LRESULT CDebugView::OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
+LRESULT CDebugView::OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	return 0;
+}

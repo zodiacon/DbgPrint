@@ -26,6 +26,7 @@ public:
 	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
 	bool CanClose();
 	bool IsRealTime() const;
+	bool IsEmpty() const;
 
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const*);
@@ -52,6 +53,7 @@ protected:
 	ALT_MSG_MAP(1)
 		COMMAND_ID_HANDLER(ID_FILE_SAVEASTEXT, OnSaveAsText)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
+		COMMAND_ID_HANDLER(ID_SEARCH_FIND, OnSearchFind)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnProperties)
 		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnEditDelete)
 		COMMAND_ID_HANDLER(ID_EDIT_COMMENT, OnEditComment)
@@ -78,6 +80,7 @@ private:
 	LRESULT OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
