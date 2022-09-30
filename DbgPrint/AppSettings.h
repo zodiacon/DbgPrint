@@ -17,7 +17,8 @@ struct AppSettings : Settings {
 		SETTING(CaptureSession0, 0, SettingType::Bool);
 		SETTING(CaptureKernel, 0, SettingType::Bool);
 		SETTING(AutoScroll, 0, SettingType::Bool);
-	END_SETTINGS
+		SETTING(BookmarkColor, RGB(0, 255, 0), SettingType::Int32);
+	END_SETTINGS()
 
 	DEF_SETTING(AlwaysOnTop, int)
 	DEF_SETTING(Font, LOGFONT)
@@ -30,5 +31,6 @@ struct AppSettings : Settings {
 	DEF_SETTING(CaptureSession0, int)
 	DEF_SETTING(CaptureKernel, int)
 	DEF_SETTING(AutoScroll, int)
+	DEF_SETTING(BookmarkColor, COLORREF)
 };
 

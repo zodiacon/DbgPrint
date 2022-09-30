@@ -387,6 +387,7 @@
     <Image Include="res\app0.ico" />
     <Image Include="res\atom.ico" />
     <Image Include="res\autoscroll.ico" />
+    <Image Include="res\bookmark.ico" />
     <Image Include="res\cancel.ico" />
     <Image Include="res\comment.ico" />
     <Image Include="res\copy.ico" />

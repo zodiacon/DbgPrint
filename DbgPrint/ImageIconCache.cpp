@@ -45,6 +45,7 @@ ImageIconCache::ImageIconCache() {
 	m_images.AddIcon(AtlLoadSysIcon(IDI_APPLICATION));
 	m_images.AddIcon(AtlLoadIconImage(IDI_KERNEL, 0, 16, 16));
 	m_images.AddIcon(AtlLoadIconImage(IDI_USERMODE, 0, 16, 16));
+	m_images.AddIcon(AtlLoadIconImage(IDI_BOOKMARK, 0, 16, 16));
 }
 
 HIMAGELIST ImageIconCache::GetImageList() const {

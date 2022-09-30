@@ -24,6 +24,9 @@ public:
 	bool IsSortable(HWND, int col) const;
 	BOOL OnDoubleClickList(HWND, int row, int col, POINT const& pt);
 	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
+	DWORD OnPrePaint(DWORD, LPNMCUSTOMDRAW cd);
+	DWORD OnItemPrePaint(DWORD, LPNMCUSTOMDRAW cd);
+
 	bool CanClose();
 	bool IsRealTime() const;
 	bool IsEmpty() const;
@@ -58,6 +61,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_DELETE, OnEditDelete)
 		COMMAND_ID_HANDLER(ID_EDIT_COMMENT, OnEditComment)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, OnEditClearAll)
+		COMMAND_ID_HANDLER(ID_EDIT_BOOKMARK, OnToggleBookmark)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -81,6 +85,7 @@ private:
 	LRESULT OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnToggleBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;

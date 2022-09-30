@@ -28,6 +28,7 @@
 #define IDD_PROPERTIES                  221
 #define IDD_COMMENT                     223
 #define IDI_COMMENT                     225
+#define IDI_BOOKMARK                    226
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
 #define IDC_PATH                        1002
@@ -37,7 +38,6 @@
 #define IDC_TIME                        1006
 #define IDC_LINK                        1008
 #define IDC_VERSION                     1009
-#define IDC_VERSION2                    1010
 #define IDC_COPYRIGHT                   1010
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
@@ -60,13 +60,22 @@
 #define ID_WINDOWS_CLOSEALL             32795
 #define ID_EDIT_CLEARALL                32796
 #define ID_OPTIONS_CONFIRMDELETE        32797
+#define ID_EDIT_BOOKMARK                32801
+#define ID_OPTIONS_BOOKMARKCOLOR        32802
+#define ID_EDIT_DELETEALLBOOKMARKS      32803
+#define ID_VIEW_NEXTBOOKMARK            32804
+#define ID_VIEW_PREVIOUSBOOKMARK        32805
+#define ID_VIEW_FIRSTBOOKMARK           32806
+#define ID_VIEW_LASTBOOKMARK            32807
+#define ID_EDIT_HIGHLIGHT               32808
+#define ID_HIGHLIGHT_REMOVEHIGHLIGHT    32809
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        226
-#define _APS_NEXT_COMMAND_VALUE         32801
+#define _APS_NEXT_RESOURCE_VALUE        227
+#define _APS_NEXT_COMMAND_VALUE         32810
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

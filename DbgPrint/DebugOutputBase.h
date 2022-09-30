@@ -4,7 +4,9 @@
 
 enum class DebugOutputFlags {
 	None = 0,
-	Kernel = 1,
+	Kernel = 0x100,
+	Bookmark = 0x200,
+	Highlight = 0x400,
 };
 DEFINE_ENUM_FLAG_OPERATORS(DebugOutputFlags);
 
