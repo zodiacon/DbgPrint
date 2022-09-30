@@ -40,6 +40,9 @@ void CMainFrame::InitMenu() {
 		{ ID_EDIT_DELETE, IDI_CANCEL },
 		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
 		{ ID_EDIT_COMMENT, IDI_COMMENT },
+		{ ID_EDIT_BOOKMARK, IDI_BOOKMARK },
+		{ ID_VIEW_NEXTBOOKMARK, IDI_BOOKMARK_NEXT },
+		{ ID_VIEW_PREVIOUSBOOKMARK, IDI_BOOKMARK_PREV },
 	};
 	for (auto& cmd : cmds) {
 		if (cmd.icon)
@@ -72,6 +75,10 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
 		{ ID_CAPTURE_CAPTUREKERNEL, IDI_ATOM },
 		{ 0 },
 		{ ID_EDIT_CLEAR_ALL, IDI_ERASE },
+		{ 0 },
+		{ ID_EDIT_BOOKMARK, IDI_BOOKMARK },
+		{ ID_VIEW_PREVIOUSBOOKMARK, IDI_BOOKMARK_PREV },
+		{ ID_VIEW_NEXTBOOKMARK, IDI_BOOKMARK_NEXT },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)

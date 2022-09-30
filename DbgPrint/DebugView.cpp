@@ -276,7 +276,7 @@ int CDebugView::GetRowImage(HWND h, int row, int col) const {
 			return item->Process.ProcessId ? 0 : 1;
 
 		case ColumnType::Text:
-			auto bookmark = (item->Flags & DebugOutputFlags::Highlight) == DebugOutputFlags::Highlight;
+			auto bookmark = (item->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark;
 			if (bookmark)
 				return 3;
 			break;
@@ -403,8 +403,50 @@ LRESULT CDebugView::OnToggleBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 	for (auto i : SelectedItemsView(m_List)) {
 		auto& item = m_Items[i];
-		item->Flags ^= DebugOutputFlags::Highlight;
+		item->Flags ^= DebugOutputFlags::Bookmark;
 	}
+	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	return 0;
+}
+
+LRESULT CDebugView::OnNextBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int n = m_List.GetSelectionMark();
+	int count = m_List.GetItemCount();
+	int next = -1;
+	for (int i = n + 1; i < count + n; i++) {
+		if ((m_Items[i % count]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
+			next = i % count;
+			break;
+		}
+	}
+	if (next >= 0)
+		m_List.SelectItem(next);
+	else
+		::MessageBeep(-1);
+	return 0;
+}
+
+LRESULT CDebugView::OnPrevBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int n = m_List.GetSelectionMark();
+	int count = m_List.GetItemCount();
+	int next = -1;
+	for (int i = n - 1 + count; i >= n; i--) {
+		if ((m_Items[i % count]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
+			next = i % count;
+			break;
+		}
+	}
+	if (next >= 0)
+		m_List.SelectItem(next);
+	else
+		::MessageBeep(-1);
+	return 0;
+}
+
+LRESULT CDebugView::OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	for (auto& item : m_Items)
+		item->Flags &= ~DebugOutputFlags::Bookmark;
+
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
 	return 0;
 }

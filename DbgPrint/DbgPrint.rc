@@ -114,7 +114,6 @@ BEGIN
         MENUITEM "&Fonts...",                   ID_OPTIONS_FONTS
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
         MENUITEM "Confirm &Erase",              ID_OPTIONS_CONFIRMDELETE
-        MENUITEM "&Bookmark Color...",          ID_OPTIONS_BOOKMARKCOLOR
     END
     POPUP "&Tab"
     BEGIN
@@ -190,6 +189,10 @@ IDI_USERMODE            ICON                    "res\\letter-u.ico"
 IDI_COMMENT             ICON                    "res\\comment.ico"
 
 IDI_BOOKMARK            ICON                    "res\\bookmark.ico"
+
+IDI_BOOKMARK_NEXT       ICON                    "res\\bookmark-next.ico"
+
+IDI_BOOKMARK_PREV       ICON                    "res\\bookmark-prev.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -476,6 +479,31 @@ END
 STRINGTABLE
 BEGIN
     ATL_IDS_MRU_FILE        "Open this document"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_RUNASADMINISTRATOR "\nRun as Administrator"
+    ID_CAPTURE_CAPTUREUSERMODE "\nCapture User Mode"
+    ID_CAPTURE_CAPTUREKERNEL "\nCapture Kernel"
+    ID_CAPTURE_CAPTURESESSION0 "\nCapture User Mode Session 0"
+    ID_CAPTURE_CAPTUREOUTPUT "\nEnable/Disable Capture"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_BOOKMARK        "\nToggle Bookmark"
+    ID_EDIT_DELETEALLBOOKMARKS "\nDelete All Bookmarks"
+    ID_VIEW_NEXTBOOKMARK    "\nNext Bookmark"
+    ID_VIEW_PREVIOUSBOOKMARK "\nPrevious Bookmark"
+    ID_VIEW_FIRSTBOOKMARK   "\nFirst Bookmark"
+    ID_VIEW_LASTBOOKMARK    "\nLast Bookmark"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_COMMENT         "\nComment"
+    ID_KERNEL_ENABLEALLCOMPONENTS "\nEnable All Components"
 END
 
 #endif    // English (United States) resources

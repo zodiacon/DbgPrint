@@ -62,6 +62,9 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_COMMENT, OnEditComment)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, OnEditClearAll)
 		COMMAND_ID_HANDLER(ID_EDIT_BOOKMARK, OnToggleBookmark)
+		COMMAND_ID_HANDLER(ID_VIEW_NEXTBOOKMARK, OnNextBookmark)
+		COMMAND_ID_HANDLER(ID_VIEW_PREVIOUSBOOKMARK, OnPrevBookmark)
+		COMMAND_ID_HANDLER(ID_EDIT_DELETEALLBOOKMARKS, OnDeleteAllBookmarks)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -86,6 +89,9 @@ private:
 	LRESULT OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnToggleBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnNextBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnPrevBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;

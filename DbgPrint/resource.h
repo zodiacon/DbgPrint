@@ -29,6 +29,9 @@
 #define IDD_COMMENT                     223
 #define IDI_COMMENT                     225
 #define IDI_BOOKMARK                    226
+#define IDI_BOOKMARK_NEXT               227
+#define IDI_ICON2                       228
+#define IDI_BOOKMARK_PREV               228
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
 #define IDC_PATH                        1002
@@ -74,7 +77,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        227
+#define _APS_NEXT_RESOURCE_VALUE        229
 #define _APS_NEXT_COMMAND_VALUE         32810
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
