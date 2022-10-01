@@ -36,12 +36,12 @@ struct DebugItem {
 	void operator delete(void* p);
 
 	ProcessKey Process;
-	CString Text;
+	std::wstring Text;
 	FILETIME SystemTime;
 	mutable CString LocalTimeAsString;
-	CString ProcessName;
+	std::wstring ProcessName;
 	DWORD Index;
 	DebugOutputFlags Flags;
-	CString Comment;
+	std::wstring Comment;
 	int Image{ -1 };
 };

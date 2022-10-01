@@ -2,8 +2,8 @@
 #include "ImageIconCache.h"
 #include "resource.h"
 
-int ImageIconCache::GetIcon(const CString& path, HICON* phIcon) const {
-	if (path.IsEmpty() || path.Find(L'\\') < 0)
+int ImageIconCache::GetIcon(std::wstring_view path, HICON* phIcon) const {
+	if (path.empty() || path.find(L'\\') != std::wstring::npos)
 		return 0;
 
 	std::wstring wspath(path);
@@ -18,7 +18,7 @@ int ImageIconCache::GetIcon(const CString& path, HICON* phIcon) const {
 		}
 	}
 	WORD index = 0;
-	CString spath(path);
+	CString spath(path.data());
 	auto hIcon = ::ExtractAssociatedIcon(_Module.GetModuleInstance(), spath.GetBufferSetLength(MAX_PATH), &index);
 
 	if (hIcon) {
@@ -52,8 +52,4 @@ HIMAGELIST ImageIconCache::GetImageList() const {
 	return m_images;
 }
 
-ImageIconCache& ImageIconCache::Get() {
-	static ImageIconCache cache;
-	return cache;
-}
 

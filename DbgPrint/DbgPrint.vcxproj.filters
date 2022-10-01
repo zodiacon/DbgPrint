@@ -54,9 +54,6 @@
     <ClCompile Include="ProcessManager.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
-    <ClCompile Include="Exporter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Helpers.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
@@ -74,6 +71,12 @@
     </ClCompile>
     <ClCompile Include="DebugView.cpp">
       <Filter>Views</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugLogPersist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interfaces.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,9 +110,6 @@
     <ClInclude Include="ProcessManager.h">
       <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="Exporter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Helpers.h">
       <Filter>Helpers</Filter>
     </ClInclude>
@@ -127,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="DebugView.h">
       <Filter>Views</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugLogPersist.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

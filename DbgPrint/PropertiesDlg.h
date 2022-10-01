@@ -3,6 +3,8 @@
 #include "DialogHelper.h"
 
 struct DebugItem;
+class ImageIconCache;
+class ProcessManager;
 
 class CPropertiesDlg :
 	public CDialogImpl<CPropertiesDlg>,
@@ -11,7 +13,7 @@ class CPropertiesDlg :
 public:
 	enum { IDD = IDD_PROPERTIES };
 
-	CPropertiesDlg(DebugItem const& item);
+	CPropertiesDlg(DebugItem const& item, ImageIconCache const& iconCache, ProcessManager const& pm);
 
 	CString const& GetComment() const {
 		return m_Comment;
@@ -40,4 +42,6 @@ private:
 
 	DebugItem const& m_Item;
 	CString m_Comment, m_Text;
+	ImageIconCache const& m_IconCache;
+	ProcessManager const& m_pm;
 };

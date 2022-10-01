@@ -9,9 +9,9 @@ struct CCommentDlg :
 public:
 	enum { IDD = IDD_COMMENT };
 
-	CCommentDlg(CString const& comment) : m_Comment(comment) {}
+	CCommentDlg(std::wstring const& comment) : m_Comment(comment) {}
 
-	CString const& GetComment() const {
+	std::wstring const& GetComment() const {
 		return m_Comment;
 	}
 
@@ -32,6 +32,6 @@ private:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	CString m_Comment;
+	std::wstring m_Comment;
 	CEdit m_Edit;
 };

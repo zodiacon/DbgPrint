@@ -6,8 +6,8 @@
 #include "resource.h"
 #include <mutex>
 #include "Interfaces.h"
-
-class ProcessManager;
+#include "ImageIconCache.h"
+#include "ProcessManager.h"
 
 class CDebugView :
 	public CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>,
@@ -54,7 +54,6 @@ protected:
 		CHAIN_MSG_MAP(CCustomDraw<CDebugView>)
 		CHAIN_MSG_MAP(BaseFrame)
 	ALT_MSG_MAP(1)
-		COMMAND_ID_HANDLER(ID_FILE_SAVEASTEXT, OnSaveAsText)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, OnEditCopy)
 		COMMAND_ID_HANDLER(ID_SEARCH_FIND, OnSearchFind)
 		COMMAND_ID_HANDLER(ID_VIEW_PROPERTIES, OnProperties)
@@ -65,6 +64,8 @@ protected:
 		COMMAND_ID_HANDLER(ID_VIEW_NEXTBOOKMARK, OnNextBookmark)
 		COMMAND_ID_HANDLER(ID_VIEW_PREVIOUSBOOKMARK, OnPrevBookmark)
 		COMMAND_ID_HANDLER(ID_EDIT_DELETEALLBOOKMARKS, OnDeleteAllBookmarks)
+		COMMAND_ID_HANDLER(ID_FILE_SAVEASTEXT, OnSaveAsText)
+		COMMAND_ID_HANDLER(ID_FILE_SAVE, OnSave)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -92,6 +93,7 @@ private:
 	LRESULT OnNextBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPrevBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
@@ -103,6 +105,8 @@ private:
 	CUpdateUIBase* m_ui{ nullptr };
 	IMainFrame* m_pFrame;
 	std::atomic<bool> m_Running{ false };
+	ImageIconCache m_IconCache;
+	ProcessManager m_pm;
 	bool m_RealTime;
 };
 

@@ -55,6 +55,7 @@ BEGIN
     BEGIN
         MENUITEM "&Run as Administrator...",    ID_FILE_RUNASADMINISTRATOR
         MENUITEM SEPARATOR
+        MENUITEM "&New Real-Time Log",          ID_FILE_NEWREALTIME
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
         MENUITEM "Save As &Text...",            ID_FILE_SAVEASTEXT

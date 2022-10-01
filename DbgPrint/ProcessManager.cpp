@@ -2,18 +2,13 @@
 #include "ProcessManager.h"
 #include <TlHelp32.h>
 
-ProcessManager& ProcessManager::Get() {
-	static ProcessManager pm;
-	return pm;
-}
-
 PCWSTR ProcessManager::GetFullImagePath(DWORD pid) const {
 	AddProcessIfNotExist(pid);
 	{
 		std::shared_lock locker(_lock);
 		if (auto it = _processes.find(pid); it != _processes.end()) {
 			auto& pi = it->second;
-			return pi->FullPath;
+			return pi->FullPath.c_str();
 		}
 	}
 	return L"";
@@ -47,7 +42,7 @@ std::vector<StaticProcessInfo*> ProcessManager::GetRuntimeProcesses() const {
 	return processes;
 }
 
-CString ProcessManager::GetProcessName(DWORD pid) const {
+std::wstring ProcessManager::GetProcessName(DWORD pid) const {
 	AddProcessIfNotExist(pid);
 	{
 		std::shared_lock locker(_lock);
@@ -79,8 +74,8 @@ bool ProcessManager::AddProcess(DWORD pid, PCWSTR name) const {
 	}
 
 	if (name == nullptr) {
-		auto bs = info->FullPath.ReverseFind(L'\\');
-		info->Name = bs < 0 ? info->FullPath : info->FullPath.Mid(bs + 1);
+		auto bs = info->FullPath.rfind(L'\\');
+		info->Name = bs == std::wstring::npos ? info->FullPath : info->FullPath.substr(bs + 1);
 	}
 	else {
 		info->Name = name;
@@ -128,7 +123,12 @@ void ProcessManager::AddProcessIfNotExist(DWORD pid) const {
 	AddProcess(pid);
 }
 
-void ProcessManager::AddProcess(std::unique_ptr<StaticProcessInfo>& pi) const {
+void ProcessManager::AddProcess(std::shared_ptr<StaticProcessInfo>& pi) const {
 	std::lock_guard locker(_lock);
 	_processesByKey.insert({ *pi, std::move(pi) });
+}
+
+void ProcessManager::AddProcessesNoLock(std::span<std::shared_ptr<StaticProcessInfo>> const& processes) {
+	for(auto& pi : processes)
+		_processesByKey.insert({ *pi, std::move(pi) });
 }

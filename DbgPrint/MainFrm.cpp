@@ -142,6 +142,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UISetCheck(ID_CAPTURE_CAPTURESESSION0, settings.CaptureSession0());
 	UISetCheck(ID_CAPTURE_CAPTUREKERNEL, settings.CaptureKernel());
 	UISetCheck(ID_VIEW_AUTOSCROLL, settings.AutoScroll());
+	UISetCheck(ID_OPTIONS_CONFIRMDELETE, settings.ConfirmErase());
 
 	if (!SecurityHelper::IsRunningElevated()) {
 		if (settings.CaptureSession0() || settings.CaptureKernel()) {
@@ -153,12 +154,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
 	}
-	auto view = new CDebugView(this);
-	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-	view->SetFont(m_Font);
-	m_pActiveView = view;
-	view->Capture(AppSettings::Get().Capture());
-	m_Tabs.AddPage(view->m_hWnd, L"Real-time Log", 0, view);
+
+	CreateDebugOutputView(L"Real-time Log");
 
 	SetAlwaysOnTop(settings.AlwaysOnTop());
 	SetDarkMode(AppSettings::Get().DarkMode());
@@ -290,8 +287,10 @@ void CMainFrame::UpdateUI() {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
 	}
-	if(active)
+	if (active)
 		m_pActiveView->UpdateUI(this);
+	else
+		UIEnable(ID_CAPTURE_CAPTUREOUTPUT, false);
 }
 
 LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) const {
@@ -372,4 +371,30 @@ void CMainFrame::SetDarkMode(bool dark) {
 	UISetCheck(ID_OPTIONS_DARKMODE, dark);
 }
 
+LRESULT CMainFrame::OnConfirmErase(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto confirm = !AppSettings::Get().ConfirmErase();
+	AppSettings::Get().ConfirmErase(confirm);
+	UISetCheck(id, confirm);
+	return 0;
+}
+
+LRESULT CMainFrame::OnNewRealTimeLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (m_pActiveView) {
+		m_pActiveView->Capture(false);
+		CString name;
+		name.Format(L"Real-time Log %d", m_Tabs.GetPageCount() + 1);
+		m_pActiveView = CreateDebugOutputView(name);
+	}
+	return 0;
+}
+
+CDebugView* CMainFrame::CreateDebugOutputView(PCWSTR name) {
+	auto view = new CDebugView(this);
+	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	view->SetFont(m_Font);
+	m_pActiveView = view;
+	view->Capture(AppSettings::Get().Capture());
+	m_Tabs.AddPage(view->m_hWnd, name, 0, view);
+	return view;
+}
 

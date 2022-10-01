@@ -340,11 +340,12 @@
     <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="CommentDlg.cpp" />
     <ClCompile Include="DbgPrint.cpp" />
+    <ClCompile Include="DebugLogPersist.cpp" />
     <ClCompile Include="DebugOutputBase.cpp" />
     <ClCompile Include="DebugView.cpp" />
-    <ClCompile Include="Exporter.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
+    <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="KernelModeDebugOutput.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="pch.cpp">
@@ -364,9 +365,9 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="AppSettings.h" />
     <ClInclude Include="CommentDlg.h" />
+    <ClInclude Include="DebugLogPersist.h" />
     <ClInclude Include="DebugOutputBase.h" />
     <ClInclude Include="DebugView.h" />
-    <ClInclude Include="Exporter.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="ImageIconCache.h" />
     <ClInclude Include="Interfaces.h" />

@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "DebugView.h"
 #include "SortHelper.h"
-#include "ImageIconCache.h"
-#include "ProcessManager.h"
 #include "SecurityHelper.h"
 #include "ListViewhelper.h"
 #include "ClipboardHelper.h"
@@ -12,6 +10,7 @@
 #include "CommentDlg.h"
 #include <ThemeHelper.h>
 #include "resource.h"
+#include "DebugLogPersist.h"
 
 CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
 }
@@ -26,9 +25,9 @@ void CDebugView::UpdateList() {
 
 LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	m_hWndClient = m_List.Create(m_hWnd, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
-		LVS_OWNERDATA | LVS_REPORT | LVS_SHAREIMAGELISTS);
+		LVS_OWNERDATA | LVS_REPORT);
 	m_List.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP | LVS_EX_SUBITEMIMAGES);
-	m_List.SetImageList(ImageIconCache::Get().GetImageList(), LVSIL_SMALL);
+	m_List.SetImageList(m_IconCache.GetImageList(), LVSIL_SMALL);
 
 	auto cm = GetColumnManager(m_List);
 	cm->AddColumn(L"", LVCFMT_RIGHT, 1);
@@ -82,7 +81,7 @@ LRESULT CDebugView::OnFindItem(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) 
 
 void CDebugView::ShowProperties(int selected) {
 	auto& item = *m_Items[selected];
-	CPropertiesDlg dlg(item);
+	CPropertiesDlg dlg(item, m_IconCache, m_pm);
 	if (IDOK == dlg.DoModal()) {
 		//
 		// update comment
@@ -112,8 +111,8 @@ CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 			return item.LocalTimeAsString;
 
 		case ColumnType::ProcessId: text.Format(L"%u", item.Process.ProcessId); break;
-		case ColumnType::ProcessName: return item.ProcessName;
-		case ColumnType::Comment: return item.Comment;
+		case ColumnType::ProcessName: return item.ProcessName.c_str();
+		case ColumnType::Comment: return item.Comment.c_str();
 	}
 	return text;
 }
@@ -121,7 +120,7 @@ CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 PCWSTR CDebugView::GetExistingColumnText(HWND h, int row, int col) const {
 	auto& item = m_Items[row];
 	if (GetColumnManager(h)->GetColumnTag<ColumnType>(col) == ColumnType::Text)
-		return item->Text;
+		return item->Text.c_str();
 
 	return nullptr;
 }
@@ -180,15 +179,14 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	if (!m_Running)
 		return;
 
-	auto const& pm = ProcessManager::Get();
 	auto item = std::make_unique<DebugItem>();
-	item->ProcessName = pm.GetProcessName(pid);
-	item->Process = pm.GetProcessKey(pid);
-	item->Text = text;
+	item->ProcessName = m_pm.GetProcessName(pid);
+	item->Process = m_pm.GetProcessKey(pid);
+	item->Text.assign(text, text + strlen(text) + 1);
 	item->SystemTime = time;
 	item->Flags = flags;
 	item->Index = InterlockedIncrement(&s_Index);
-	item->Image = pid <= 4 ? 0 : ImageIconCache::Get().GetIcon(pm.GetProcessInfo(item->Process)->FullPath);
+	item->Image = pid <= 4 ? 0 : m_IconCache.GetIcon(m_pm.GetProcessInfo(item->Process)->FullPath);
 	std::lock_guard locker(m_Lock);
 	m_TempItems.push_back(std::move(item));
 }
@@ -309,20 +307,7 @@ LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	auto ok = IDOK == dlg.DoModal();
 	ThemeHelper::Resume();
 	if(ok) {
-		CString text;
-		auto columns = m_List.GetHeader().GetItemCount();
-		for (int i = 0; i < m_List.GetItemCount(); i++) {
-			CString item;
-			for (int c = 0; c < columns; c++) {
-				if (m_List.GetItemText(i, c, item)) {
-					item.Trim(L"\n\r");
-					text += item;
-				}
-				if (c < columns - 1)
-					text += L",";
-			}
-			text += L"\n";
-		}
+		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",");
 		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, 0, nullptr));
 		if (!hFile) {
 			Helpers::ReportError(L"Error: ");
@@ -377,7 +362,7 @@ LRESULT CDebugView::OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	auto& item = m_Items[selected];
 	CCommentDlg dlg(item->Comment);
-	if (IDOK == dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(CImageList(ImageIconCache::Get().GetImageList()).GetIcon(item->Image)))) {
+	if (IDOK == dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(CImageList(m_IconCache.GetImageList()).GetIcon(item->Image)))) {
 		item->Comment = dlg.GetComment();
 		m_List.RedrawItems(selected, selected);
 	}
@@ -385,6 +370,10 @@ LRESULT CDebugView::OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT CDebugView::OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (AppSettings::Get().ConfirmErase()) {
+		if (AtlMessageBox(m_hWnd, L"Erase log?", IDS_TITLE, MB_YESNO | MB_DEFBUTTON2 | MB_ICONWARNING) == IDNO)
+			return 0;
+	}
 	{
 		std::lock_guard locker(m_Lock);
 		m_Items.clear();
@@ -448,6 +437,24 @@ LRESULT CDebugView::OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		item->Flags &= ~DebugOutputFlags::Bookmark;
 
 	m_List.RedrawItems(m_List.GetTopIndex(), m_List.GetTopIndex() + m_List.GetCountPerPage());
+	return 0;
+}
+
+LRESULT CDebugView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(FALSE, L"dbgp", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
+		L"DebugPrint Native Files (*.dbgp)\0*.dbgp\0CSV Files (*.csv)\0*.csv\0", m_hWnd);
+	ThemeHelper::Suspend();
+	auto ok = IDOK == dlg.DoModal();
+	ThemeHelper::Resume();
+	if (ok) {
+		auto ext = wcsrchr(dlg.m_szFileTitle, L'.');
+		auto format = ext && _wcsicmp(ext, L".dbgp") == 0 ? PersistFormat::Native : PersistFormat::CSV;
+		ok = DebugLogPersist::Save(format, m_Items, m_IconCache, m_pm, dlg.m_szFileName);
+		if (ok)
+			AtlMessageBox(m_hWnd, L"Saved successfully.", IDS_TITLE, MB_ICONINFORMATION);
+		else
+			AtlMessageBox(m_hWnd, L"Error saving log.", IDS_TITLE, MB_ICONERROR);
+	}
 	return 0;
 }
 

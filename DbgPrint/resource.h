@@ -30,7 +30,6 @@
 #define IDI_COMMENT                     225
 #define IDI_BOOKMARK                    226
 #define IDI_BOOKMARK_NEXT               227
-#define IDI_ICON2                       228
 #define IDI_BOOKMARK_PREV               228
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
@@ -72,13 +71,15 @@
 #define ID_VIEW_LASTBOOKMARK            32807
 #define ID_EDIT_HIGHLIGHT               32808
 #define ID_HIGHLIGHT_REMOVEHIGHLIGHT    32809
+#define ID_FILE_NEWREAL                 32810
+#define ID_FILE_NEWREALTIME             32811
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        229
-#define _APS_NEXT_COMMAND_VALUE         32810
+#define _APS_NEXT_COMMAND_VALUE         32812
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

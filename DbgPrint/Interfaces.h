@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 struct ProcessKey {
 	DWORD ProcessId;
 	FILETIME StartTime{};
@@ -9,6 +11,8 @@ struct ProcessKey {
 			other.StartTime.dwHighDateTime == StartTime.dwHighDateTime;
 	}
 };
+
+std::wostream& operator<<(std::wostream& out, ProcessKey const& key);
 
 template<>
 struct std::hash<ProcessKey> {
