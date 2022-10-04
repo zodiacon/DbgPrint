@@ -66,6 +66,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_EDIT_DELETEALLBOOKMARKS, OnDeleteAllBookmarks)
 		COMMAND_ID_HANDLER(ID_FILE_SAVEASTEXT, OnSaveAsText)
 		COMMAND_ID_HANDLER(ID_FILE_SAVE, OnSave)
+		COMMAND_ID_HANDLER(ID_EDIT_HIGHLIGHT, OnHighlight)
 	END_MSG_MAP()
 
 	enum class ColumnType {
@@ -94,6 +95,7 @@ private:
 	LRESULT OnPrevBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
 	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
@@ -107,6 +109,7 @@ private:
 	std::atomic<bool> m_Running{ false };
 	ImageIconCache m_IconCache;
 	ProcessManager m_pm;
+	std::vector<HighlightItem> m_Highlights;
 	bool m_RealTime;
 };
 

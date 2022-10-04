@@ -13,6 +13,7 @@ DEFINE_ENUM_FLAG_OPERATORS(ProcessInfoFlags);
 
 struct StaticProcessInfo : ProcessKey {
 	std::wstring FullPath;
+	std::wstring CommandLine;
 	std::wstring Name;
 	wil::unique_handle hProcess;
 	DWORD SessionId;

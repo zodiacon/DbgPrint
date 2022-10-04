@@ -11,6 +11,7 @@
 #include <ThemeHelper.h>
 #include "resource.h"
 #include "DebugLogPersist.h"
+#include "HighlightDlg.h"
 
 CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
 }
@@ -39,6 +40,10 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->AddColumn(L"Comment", LVCFMT_LEFT, 150, ColumnType::Comment);
 	cm->UpdateColumns();
 	cm->DeleteColumn(0);
+
+	m_Highlights = AppSettings::Get().HighlightItems();
+	if (m_Highlights.empty())
+		m_Highlights = DefaultHighlightColors;
 
 	m_TempItems.reserve(128);
 	m_Items.reserve(4096);
@@ -457,4 +462,12 @@ LRESULT CDebugView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	}
 	return 0;
 }
+
+LRESULT CDebugView::OnHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CHighlightDlg dlg(m_Highlights);
+	if (IDOK == dlg.DoModal()) {
+	}
+	return 0;
+}
+
 

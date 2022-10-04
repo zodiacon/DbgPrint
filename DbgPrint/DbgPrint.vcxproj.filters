@@ -78,6 +78,9 @@
     <ClCompile Include="Interfaces.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HighlightDlg.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="DebugLogPersist.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HighlightDlg.h">
+      <Filter>Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

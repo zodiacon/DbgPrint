@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ProcessManager.h"
 #include <TlHelp32.h>
+#include <winternl.h>
 
 PCWSTR ProcessManager::GetFullImagePath(DWORD pid) const {
 	AddProcessIfNotExist(pid);
@@ -71,6 +72,14 @@ bool ProcessManager::AddProcess(DWORD pid, PCWSTR name) const {
 		FILETIME dummy;
 		::GetProcessTimes(hProcess, &info->StartTime, &dummy, &dummy, &dummy);
 		info->hProcess.reset(hProcess);
+		enum {
+			ProcessCommandLineInformation = 60
+		};
+		BYTE buffer[2048];
+		if (STATUS_SUCCESS == ::NtQueryInformationProcess(hProcess, (PROCESSINFOCLASS)ProcessCommandLineInformation, buffer, sizeof(buffer), nullptr)) {
+			auto us = (UNICODE_STRING*)buffer;
+			info->CommandLine = std::wstring(us->Buffer, us->Length / sizeof(WCHAR));
+		}
 	}
 
 	if (name == nullptr) {

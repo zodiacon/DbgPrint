@@ -52,6 +52,7 @@ bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<D
 		auto pi = std::make_shared<StaticProcessInfo>();
 		OpenFileAndRead(pidir, L"Name", pi->Name);
 		OpenFileAndRead(pidir, L"FullPath", pi->FullPath);
+		OpenFileAndRead(pidir, L"CommandLine", pi->CommandLine);
 		OpenFileAndRead(pidir, L"Session", pi->SessionId);
 		OpenFileAndRead(pidir, L"StartTime", pi->StartTime);
 		OpenFileAndRead(pidir, L"ProcessId", pi->ProcessId);
@@ -117,6 +118,7 @@ bool DebugLogPersist::SaveNative(std::span<std::shared_ptr<DebugItem>> items, Im
 		auto pdir = dir.CreateStructuredDirectory(std::to_wstring(i++));
 		CreateFileAndWrite(pdir, L"Name", pi->Name);
 		CreateFileAndWrite(pdir, L"FullPath", pi->FullPath);
+		CreateFileAndWrite(pdir, L"CommandLine", pi->CommandLine);
 		CreateFileAndWrite(pdir, L"Session", pi->SessionId);
 		CreateFileAndWrite(pdir, L"StartTime", pi->StartTime);
 		CreateFileAndWrite(pdir, L"ProcessId", pi->ProcessId);

@@ -21,6 +21,12 @@ struct std::hash<ProcessKey> {
 	}
 };
 
+struct HighlightItem {
+	COLORREF Light;
+	COLORREF Dark;
+	std::wstring Text;
+};
+
 struct IMainFrame {
 	virtual BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd = nullptr) = 0;
 };

@@ -31,6 +31,7 @@
 #define IDI_BOOKMARK                    226
 #define IDI_BOOKMARK_NEXT               227
 #define IDI_BOOKMARK_PREV               228
+#define IDD_HIGHLIGHT                   229
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
 #define IDC_PATH                        1002
@@ -38,9 +39,18 @@
 #define IDC_COMMENT                     1004
 #define IDC_INDEX                       1005
 #define IDC_TIME                        1006
+#define IDC_PATH2                       1007
+#define IDC_CMDLINE                     1007
 #define IDC_LINK                        1008
 #define IDC_VERSION                     1009
 #define IDC_COPYRIGHT                   1010
+#define IDC_LIST                        1011
+#define IDC_COLOR                       1013
+#define IDC_SAVE                        1015
+#define IDC_LOAD                        1016
+#define IDC_RESET                       1017
+#define IDC_ADD                         1018
+#define IDC_DELETE                      1019
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
 #define ID_OPTIONS_FONTS                32777
@@ -73,14 +83,16 @@
 #define ID_HIGHLIGHT_REMOVEHIGHLIGHT    32809
 #define ID_FILE_NEWREAL                 32810
 #define ID_FILE_NEWREALTIME             32811
+#define ID_SEARCH_FILTER                32812
+#define ID_EDIT_HIGHLIGHT32813          32813
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        229
-#define _APS_NEXT_COMMAND_VALUE         32812
-#define _APS_NEXT_CONTROL_VALUE         1010
+#define _APS_NEXT_RESOURCE_VALUE        231
+#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

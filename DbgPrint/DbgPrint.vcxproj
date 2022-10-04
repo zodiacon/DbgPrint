@@ -344,6 +344,7 @@
     <ClCompile Include="DebugOutputBase.cpp" />
     <ClCompile Include="DebugView.cpp" />
     <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="HighlightDlg.cpp" />
     <ClCompile Include="ImageIconCache.cpp" />
     <ClCompile Include="Interfaces.cpp" />
     <ClCompile Include="KernelModeDebugOutput.cpp" />
@@ -369,6 +370,7 @@
     <ClInclude Include="DebugOutputBase.h" />
     <ClInclude Include="DebugView.h" />
     <ClInclude Include="Helpers.h" />
+    <ClInclude Include="HighlightDlg.h" />
     <ClInclude Include="ImageIconCache.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="KernelModeDebugOutput.h" />

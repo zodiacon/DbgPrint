@@ -278,19 +278,18 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 
 void CMainFrame::UpdateUI() {
 	auto active = m_Tabs && m_Tabs.GetPageCount() > 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
-	UIEnable(ID_WINDOWS_CLOSE, active && !m_pActiveView->IsRealTime());
+	auto realTime = active && m_pActiveView->IsRealTime();
+	UIEnable(ID_WINDOWS_CLOSE, !realTime);
 	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
-	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, active);
-	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, active);
-	UIEnable(ID_SEARCH_FIND, active && m_pActiveView && !m_pActiveView->IsEmpty());
+	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, realTime);
+	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, realTime);
+	UIEnable(ID_SEARCH_FIND, active && !m_pActiveView->IsEmpty());
 	if (SecurityHelper::IsRunningElevated()) {
-		UIEnable(ID_CAPTURE_CAPTUREKERNEL, active);
-		UIEnable(ID_CAPTURE_CAPTURESESSION0, active);
+		UIEnable(ID_CAPTURE_CAPTUREKERNEL, realTime);
+		UIEnable(ID_CAPTURE_CAPTURESESSION0, realTime);
 	}
 	if (active)
 		m_pActiveView->UpdateUI(this);
-	else
-		UIEnable(ID_CAPTURE_CAPTUREOUTPUT, false);
 }
 
 LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) const {
