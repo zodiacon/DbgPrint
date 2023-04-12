@@ -13,6 +13,9 @@
 #include <ThemeHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
+	if (m_pFindDlg && m_pFindDlg->IsDialogMessageW(pMsg))
+		return TRUE;
+
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
 
@@ -29,7 +32,7 @@ void CMainFrame::InitMenu() {
 	} cmds[] = {
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_EDIT_COPY, IDI_COPY },
-		{ ID_EDIT_FIND, IDI_FIND },
+		{ ID_SEARCH_FIND, IDI_FIND },
 		{ ID_CAPTURE_CAPTUREOUTPUT, IDI_PLAY },
 		{ ID_CAPTURE_CAPTUREUSERMODE, IDI_USER },
 		{ ID_CAPTURE_CAPTURESESSION0, IDI_USER0 },
@@ -79,6 +82,9 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
 		{ ID_EDIT_BOOKMARK, IDI_BOOKMARK },
 		{ ID_VIEW_PREVIOUSBOOKMARK, IDI_BOOKMARK_PREV },
 		{ ID_VIEW_NEXTBOOKMARK, IDI_BOOKMARK_NEXT },
+		{ 0 },
+		{ ID_SEARCH_FIND, IDI_FIND },
+		{ ID_SEARCH_FINDNEXT, IDI_FIND_NEXT },
 	};
 	for (auto& b : buttons) {
 		if (b.id == 0)
@@ -283,7 +289,7 @@ void CMainFrame::UpdateUI() {
 	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, realTime);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, realTime);
-	UIEnable(ID_SEARCH_FIND, active && !m_pActiveView->IsEmpty());
+	UIEnable(ID_SEARCH_FIND, active);
 	if (SecurityHelper::IsRunningElevated()) {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, realTime);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, realTime);
@@ -395,5 +401,36 @@ CDebugView* CMainFrame::CreateDebugOutputView(PCWSTR name) {
 	view->Capture(AppSettings::Get().Capture());
 	m_Tabs.AddPage(view->m_hWnd, name, 0, view);
 	return view;
+}
+
+LRESULT CMainFrame::OnSearchFind(WORD, WORD, HWND, BOOL&) {
+	if (m_pFindDlg == nullptr) {
+		m_pFindDlg = new CFindReplaceDialog;
+		m_pFindDlg->Create(TRUE, m_SearchText, nullptr, FR_DOWN | FR_HIDEWHOLEWORD, m_hWnd);
+		m_pFindDlg->ShowWindow(SW_SHOW);
+	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnFind(UINT msg, WPARAM wp, LPARAM lp, BOOL&) {
+	if (m_pFindDlg->IsTerminating()) {
+		m_pFindDlg = nullptr;
+		return 0;
+	}
+
+	m_SearchText = m_pFindDlg->GetFindString();
+	auto page = m_Tabs.GetActivePage();
+	if (page >= 0)
+		::SendMessage(m_Tabs.GetPageHWND(page), msg, wp, lp);
+
+	return 0;
+}
+
+CFindReplaceDialog* CMainFrame::GetFindDlg() {
+	return m_pFindDlg;
+}
+
+CString& CMainFrame::GetSearchString() {
+	return m_SearchText;
 }
 

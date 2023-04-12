@@ -68,22 +68,6 @@ LRESULT CDebugView::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
 	return 0;
 }
 
-LRESULT CDebugView::OnFindItem(int /*idCtrl*/, LPNMHDR hdr, BOOL& /*bHandled*/) {
-	auto fi = (NMLVFINDITEM*)hdr;
-	auto text = fi->lvfi.psz;
-	auto col = GetColumnManager(m_List)->GetColumnByTag(ColumnType::ProcessName);
-	int selected = m_List.GetNextItem(-1, LVIS_SELECTED);
-
-	int start = selected + 1;
-	int count = m_List.GetItemCount();
-	CString name;
-	for (int i = start; i < count + start; i++) {
-		if (m_List.GetItemText(i % count, col, name) && name.CompareNoCase(text) == 0)
-			return i % count;
-	}
-	return -1;
-}
-
 void CDebugView::ShowProperties(int selected) {
 	auto& item = *m_Items[selected];
 	CPropertiesDlg dlg(item, m_IconCache, m_pm);
@@ -264,6 +248,8 @@ void CDebugView::UpdateUI(CUpdateUIBase* ui) {
 	ui->UIEnable(ID_EDIT_COPY, selectedCount > 0);
 	ui->UIEnable(ID_EDIT_COMMENT, selectedCount == 1);
 	ui->UIEnable(ID_EDIT_BOOKMARK, selectedCount > 0);
+	ui->UIEnable(ID_SEARCH_FIND, m_List.GetItemCount() > 0);
+	ui->UIEnable(ID_SEARCH_FINDNEXT, !m_pFrame->GetSearchString().IsEmpty());
 }
 
 int CDebugView::GetRowImage(HWND h, int row, int col) const {
@@ -387,7 +373,18 @@ LRESULT CDebugView::OnEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-LRESULT CDebugView::OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT CDebugView::OnFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	auto dlg = m_pFrame->GetFindDlg();
+	auto searchDown = dlg->SearchDown();
+	auto index = ListViewHelper::SearchItem(m_List, dlg->GetFindString(), searchDown, dlg->MatchCase());
+
+	if (index >= 0) {
+		m_List.SelectItem(index);
+		m_List.SetFocus();
+	}
+	else {
+		AtlMessageBox(m_hWnd, L"Finished searching.", IDR_MAINFRAME, MB_ICONINFORMATION);
+	}
 	return 0;
 }
 
@@ -468,6 +465,10 @@ LRESULT CDebugView::OnHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	if (IDOK == dlg.DoModal()) {
 	}
 	return 0;
+}
+
+LRESULT CDebugView::OnFindNext(WORD, WORD, HWND, BOOL&) {
+	return SendMessage(CFindReplaceDialog::GetFindReplaceMsg());
 }
 
 

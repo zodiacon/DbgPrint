@@ -29,4 +29,6 @@ struct HighlightItem {
 
 struct IMainFrame {
 	virtual BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd = nullptr) = 0;
+	virtual CFindReplaceDialog* GetFindDlg() = 0;
+	virtual CString& GetSearchString() = 0;
 };

@@ -21,6 +21,8 @@ public:
 	virtual BOOL OnIdle();
 
 	BOOL TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) override;
+	CFindReplaceDialog* GetFindDlg() override;
+	CString& GetSearchString() override;
 
 protected:
 	BEGIN_MSG_MAP(CMainFrame)
@@ -42,10 +44,12 @@ protected:
 		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREKERNEL, OnCaptureKernel)
 		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL, OnAutoScroll)
 		MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
+		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFind)
 		COMMAND_ID_HANDLER(ID_KERNEL_ENABLEALLCOMPONENTS, OnEnableKernelComponents)
 		COMMAND_ID_HANDLER(ID_KERNEL_DISABLEALLCOMPONENTS, OnEnableKernelComponents)
 		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSE, OnTabClose)
 		COMMAND_ID_HANDLER(ID_WINDOWS_CLOSEALL, OnTabCloseAll)
+		COMMAND_ID_HANDLER(ID_SEARCH_FIND, OnSearchFind)
 		COMMAND_ID_HANDLER(ID_OPTIONS_DARKMODE, OnDarkMode)
 		COMMAND_ID_HANDLER(ID_FILE_NEWREALTIME, OnNewRealTimeLog)
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
@@ -99,9 +103,13 @@ private:
 	LRESULT OnDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnConfirmErase(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnNewRealTimeLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	CCustomTabView m_Tabs;
 	CDebugView* m_pActiveView;
 	CFont m_Font;
 	Theme m_DarkTheme, m_DefaultTheme{ true };
+	CFindReplaceDialog* m_pFindDlg{ nullptr };
+	CString m_SearchText;
 };

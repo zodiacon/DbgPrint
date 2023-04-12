@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Settings.h"
+#include <Settings.h>
 #include "Interfaces.h"
 
 static std::vector<HighlightItem> DefaultHighlightColors {
@@ -27,7 +27,7 @@ struct AppSettings : Settings {
 		SETTING(AutoScroll, 0, SettingType::Bool);
 		SETTING(BookmarkColor, RGB(0, 255, 0), SettingType::Int32);
 		SETTING(HightlightItems, DefaultHighlightColors, SettingType::Binary);
-	END_SETTINGS()
+	END_SETTINGS
 
 	DEF_SETTING(AlwaysOnTop, int)
 	DEF_SETTING(Font, LOGFONT)

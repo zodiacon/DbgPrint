@@ -211,6 +211,9 @@
     <Image Include="res\bookmark-next.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>
+    <Image Include="res\FindNext.ico">
+      <Filter>Resource Files\Icons</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DbgPrint.rc">

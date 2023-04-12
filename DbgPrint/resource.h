@@ -32,6 +32,8 @@
 #define IDI_BOOKMARK_NEXT               227
 #define IDI_BOOKMARK_PREV               228
 #define IDD_HIGHLIGHT                   229
+#define IDI_ICON1                       231
+#define IDI_FIND_NEXT                   231
 #define IDC_PID                         1000
 #define IDC_NAME                        1001
 #define IDC_PATH                        1002
@@ -39,7 +41,6 @@
 #define IDC_COMMENT                     1004
 #define IDC_INDEX                       1005
 #define IDC_TIME                        1006
-#define IDC_PATH2                       1007
 #define IDC_CMDLINE                     1007
 #define IDC_LINK                        1008
 #define IDC_VERSION                     1009
@@ -85,13 +86,14 @@
 #define ID_FILE_NEWREALTIME             32811
 #define ID_SEARCH_FILTER                32812
 #define ID_EDIT_HIGHLIGHT32813          32813
+#define ID_SEARCH_FINDNEXT              32816
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        231
-#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_RESOURCE_VALUE        232
+#define _APS_NEXT_COMMAND_VALUE         32819
 #define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

@@ -90,6 +90,7 @@ BEGIN
     POPUP "&Search"
     BEGIN
         MENUITEM "&Find...\tCtrl+F",            ID_SEARCH_FIND
+        MENUITEM "Find &Next\tF3",              ID_SEARCH_FINDNEXT
         MENUITEM "&Quick Find\tCtrl+Q",         ID_SEARCH_QUICKFIND
         MENUITEM "Filter...",                   ID_SEARCH_FILTER
     END
@@ -192,6 +193,8 @@ IDI_BOOKMARK            ICON                    "res\\bookmark.ico"
 IDI_BOOKMARK_NEXT       ICON                    "res\\bookmark-next.ico"
 
 IDI_BOOKMARK_PREV       ICON                    "res\\bookmark-prev.ico"
+
+IDI_FIND_NEXT           ICON                    "res\\FindNext.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -317,10 +320,12 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
+    "M",            ID_EDIT_COMMENT,        VIRTKEY, CONTROL, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
@@ -331,8 +336,9 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    "M",            ID_EDIT_COMMENT,        VIRTKEY, CONTROL, NOINVERT
-    VK_DELETE,      ID_EDIT_DELETE,         VIRTKEY, NOINVERT
+    "F",            ID_SEARCH_FIND,         VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_SEARCH_QUICKFIND,    VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_SEARCH_FINDNEXT,     VIRTKEY, NOINVERT
 END
 
 
@@ -342,8 +348,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,2,0,0
- PRODUCTVERSION 0,2,0,0
+ FILEVERSION 0,3,0,0
+ PRODUCTVERSION 0,3,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -358,13 +364,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+            VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Debug User/Kernel Output"
-            VALUE "FileVersion", "0.2.0.0"
+            VALUE "FileVersion", "0.3.0.0"
             VALUE "InternalName", "DbgPrint"
-            VALUE "LegalCopyright", "©2021-2022 Pavel Yosifovich"
+            VALUE "LegalCopyright", "©2021-2023 Pavel Yosifovich"
             VALUE "OriginalFilename", "DbgPrint.exe"
             VALUE "ProductName", "Debug Print"
-            VALUE "ProductVersion", "0.2.0.0"
+            VALUE "ProductVersion", "0.3"
         END
     END
     BLOCK "VarFileInfo"
