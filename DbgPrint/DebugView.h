@@ -8,6 +8,7 @@
 #include "Interfaces.h"
 #include "ImageIconCache.h"
 #include "ProcessManager.h"
+#include <SortedFilteredVector.h>
 
 class CDebugView :
 	public CFrameWindowImpl<CDebugView, CWindow, CControlWinTraits>,
@@ -98,7 +99,7 @@ private:
 	LRESULT OnFindNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
-	std::vector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
+	SortedFilteredVector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
 	std::mutex m_Lock;
 	UserModeDebugOutput m_UserMode;
 	UserModeDebugOutput m_UserModeSession0{ L"Global" };

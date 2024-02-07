@@ -139,9 +139,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Image Include="res\DbgPrint.ico">
       <Filter>Resource Files\Icons</Filter>
     </Image>

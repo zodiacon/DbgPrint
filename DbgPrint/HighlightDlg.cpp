@@ -47,10 +47,6 @@ int CHighlightDlg::OnSubItemPrePaint(int, LPNMCUSTOMDRAW cd) {
     return CDRF_SKIPPOSTPAINT;
 }
 
-LRESULT CHighlightDlg::OnCustomDraw(int, LPNMHDR, BOOL&) {
-    return LRESULT();
-}
-
 LRESULT CHighlightDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     InitDynamicLayout();
     m_List.Attach(GetDlgItem(IDC_LIST));

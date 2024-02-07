@@ -8,7 +8,7 @@
 #include "ProcessManager.h"
 #include "ImageIconCache.h"
 
-bool DebugLogPersist::Save(PersistFormat format, std::span<std::shared_ptr<DebugItem>> items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {
+bool DebugLogPersist::Save(PersistFormat format, std::vector<std::shared_ptr<DebugItem>> const& items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {
 	return format == PersistFormat::Native ? SaveNative(items, iconCache, pm, path) : SaveCSV(items, path);
 }
 
@@ -63,7 +63,7 @@ bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<D
 	return true;
 }
 
-bool DebugLogPersist::SaveCSV(std::span<std::shared_ptr<DebugItem>> items, std::wstring_view path) {
+bool DebugLogPersist::SaveCSV(std::vector<std::shared_ptr<DebugItem>> const& items, std::wstring_view path) {
 	std::wofstream stm;
 	stm.open(path.data(), std::ios_base::out);
 	if (!stm)
@@ -77,7 +77,7 @@ bool DebugLogPersist::SaveCSV(std::span<std::shared_ptr<DebugItem>> items, std::
 	return true;
 }
 
-bool DebugLogPersist::SaveNative(std::span<std::shared_ptr<DebugItem>> items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {
+bool DebugLogPersist::SaveNative(std::vector<std::shared_ptr<DebugItem>> const& items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {
 	using namespace StructuredStorage;
 
 	auto file = CompoundFile::Create(path.data());

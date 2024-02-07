@@ -45,7 +45,7 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	if (m_Highlights.empty())
 		m_Highlights = DefaultHighlightColors;
 
-	m_TempItems.reserve(128);
+	m_TempItems.reserve(256);
 	m_Items.reserve(4096);
 
 	SetTimer(1, 1000);
@@ -60,7 +60,7 @@ LRESULT CDebugView::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
 			if (m_TempItems.empty())
 				return 0;
 
-			m_Items.insert(m_Items.end(), m_TempItems.begin(), m_TempItems.end());
+			m_Items.append(m_TempItems.begin(), m_TempItems.end());
 			m_TempItems.clear();
 		}
 		UpdateList();
@@ -199,7 +199,7 @@ void CDebugView::DoSort(SortInfo const* si) {
 	};
 
 	std::lock_guard locker(m_Lock);
-	std::ranges::sort(m_Items, compare);
+	m_Items.Sort(compare);
 }
 
 void CDebugView::Capture(bool capture) {
@@ -337,7 +337,7 @@ LRESULT CDebugView::OnEditDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	{
 		std::lock_guard locker(m_Lock);
 		while ((n = m_List.GetNextItem(n, LVIS_SELECTED)) != -1) {
-			m_Items.erase(m_Items.begin() + n - offset);
+			m_Items.erase(n - offset);
 			offset++;
 		}
 	}
@@ -451,7 +451,7 @@ LRESULT CDebugView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	if (ok) {
 		auto ext = wcsrchr(dlg.m_szFileTitle, L'.');
 		auto format = ext && _wcsicmp(ext, L".dbgp") == 0 ? PersistFormat::Native : PersistFormat::CSV;
-		ok = DebugLogPersist::Save(format, m_Items, m_IconCache, m_pm, dlg.m_szFileName);
+		ok = DebugLogPersist::Save(format, m_Items.GetItems(), m_IconCache, m_pm, dlg.m_szFileName);
 		if (ok)
 			AtlMessageBox(m_hWnd, L"Saved successfully.", IDS_TITLE, MB_ICONINFORMATION);
 		else
