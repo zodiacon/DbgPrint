@@ -350,8 +350,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,2,0
- PRODUCTVERSION 0,3,2,0
+ FILEVERSION 0,4,0,0
+ PRODUCTVERSION 0,4,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -368,12 +368,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Debug User/Kernel Output"
-            VALUE "FileVersion", "0.3.2.0"
+            VALUE "FileVersion", "0.4.0.0"
             VALUE "InternalName", "DbgPrint"
             VALUE "LegalCopyright", "©2021-2026 Pavel Yosifovich"
             VALUE "OriginalFilename", "DbgPrint.exe"
             VALUE "ProductName", "Debug Print"
-            VALUE "ProductVersion", "0.3.2.0"
+            VALUE "ProductVersion", "0.4.0.0"
         END
     END
     BLOCK "VarFileInfo"

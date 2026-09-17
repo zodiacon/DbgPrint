@@ -40,6 +40,8 @@ public:
 	void CaptureSession0(bool capture);
 	
 	void UpdateUI(CUpdateUIBase* ui);
+	void SetFilter(CString const& text);
+	CString const& GetFilter() const;
 
 	void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags) override;
 
@@ -111,6 +113,7 @@ private:
 	ImageIconCache m_IconCache;
 	ProcessManager m_pm;
 	std::vector<HighlightItem> m_Highlights;
+	CString m_FilterText;
 	bool m_RealTime;
 };
 

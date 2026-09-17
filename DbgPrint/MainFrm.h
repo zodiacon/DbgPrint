@@ -3,6 +3,7 @@
 #include "DebugView.h"
 #include "Interfaces.h"
 #include <NativeCustomTabView.h>
+#include <QuickFindEdit.h>
 #include "resource.h"
 
 class CMainFrame : 
@@ -33,6 +34,8 @@ protected:
 			}
 		}
 		NOTIFY_CODE_HANDLER(TBVN_PAGEACTIVATED, OnPageActivated)
+		COMMAND_HANDLER(IDC_FILTER, EN_DELAYCHANGE, OnFilterChanged)
+		COMMAND_ID_HANDLER(ID_SEARCH_QUICKFIND, OnQuickFilter)
 		//NOTIFY_CODE_HANDLER(TBVN_CONTEXTMENU, OnPageActivated)
 		COMMAND_ID_HANDLER(ID_FILE_RUNASADMINISTRATOR, OnRunAsAdmin)
 		COMMAND_ID_HANDLER(ID_OPTIONS_ALWAYSONTOP, OnAlwaysOnTop)
@@ -68,6 +71,8 @@ private:
 	void InitToolBar(CToolBarCtrl& tb) const;
 	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
+	CDebugView* GetActiveView() const;
+	void InitFilterBand();
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -100,8 +105,14 @@ private:
 	LRESULT OnNewRealTimeLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnFilterChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnQuickFilter(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	enum { IDC_FILTER = 1100, FilterWidth = 250 };
 
 	CNativeCustomTabView m_Tabs;
+	CQuickFindEdit m_Filter;
+	CFont m_FilterFont;
 	CDebugView* m_pActiveView;
 	CFont m_Font;
 	CFindReplaceDialog* m_pFindDlg{ nullptr };

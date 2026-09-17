@@ -12,6 +12,7 @@
 #include "resource.h"
 #include "DebugLogPersist.h"
 #include "HighlightDlg.h"
+#include <shlwapi.h>
 
 CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
 }
@@ -250,6 +251,34 @@ void CDebugView::UpdateUI(CUpdateUIBase* ui) {
 	ui->UIEnable(ID_EDIT_BOOKMARK, selectedCount > 0);
 	ui->UIEnable(ID_SEARCH_FIND, m_List.GetItemCount() > 0);
 	ui->UIEnable(ID_SEARCH_FINDNEXT, !m_pFrame->GetSearchString().IsEmpty());
+}
+
+void CDebugView::SetFilter(CString const& text) {
+	if (text == m_FilterText)
+		return;
+
+	m_FilterText = text;
+	{
+		std::lock_guard locker(m_Lock);
+		if (text.IsEmpty())
+			m_Items.Filter(nullptr);
+		else
+			m_Items.Filter([text](auto const& item, size_t) {
+				return ::StrStrIW(item->Text.c_str(), text) != nullptr
+					|| ::StrStrIW(item->ProcessName.c_str(), text) != nullptr;
+			});
+	}
+	DoSort(GetSortInfo(m_List));
+
+	m_List.SelectAllItems(false);
+	m_List.SetItemCount((int)m_Items.size());
+	if (AppSettings::Get().AutoScroll())
+		m_List.EnsureVisible(m_List.GetItemCount() - 1, FALSE);
+	m_List.Invalidate();
+}
+
+CString const& CDebugView::GetFilter() const {
+	return m_FilterText;
 }
 
 int CDebugView::GetRowImage(HWND h, int row, int col) const {

@@ -16,6 +16,19 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (m_pFindDlg && m_pFindDlg->IsDialogMessageW(pMsg))
 		return TRUE;
 
+	if (pMsg->hwnd == m_Filter.m_hWnd && (pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)) {
+		if (pMsg->wParam == VK_RETURN) {
+			if (auto view = GetActiveView())
+				view->SetFocus();
+			return TRUE;
+		}
+		//
+		// editing keys (Delete, Ctrl+C, etc.) belong to the filter box, not the accelerators
+		//
+		if (pMsg->wParam < VK_F1 || pMsg->wParam > VK_F24)
+			return FALSE;
+	}
+
 	return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 }
 
@@ -113,6 +126,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(tb);
+	InitFilterBand();
 
 	CreateSimpleStatusBar();
 
@@ -269,6 +283,8 @@ LRESULT CMainFrame::OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 }
 
 LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	auto view = GetActiveView();
+	m_Filter.SetWindowText(view ? (PCWSTR)view->GetFilter() : L"");
 	UpdateUI();
 	return 0;
 }
@@ -365,6 +381,73 @@ CDebugView* CMainFrame::CreateDebugOutputView(PCWSTR name) {
 	view->Capture(AppSettings::Get().Capture());
 	m_Tabs.AddPage(view->m_hWnd, name, 0, view);
 	return view;
+}
+
+CDebugView* CMainFrame::GetActiveView() const {
+	int page = m_Tabs.GetActivePage();
+	return page < 0 ? nullptr : (CDebugView*)m_Tabs.GetPageData(page);
+}
+
+void CMainFrame::InitFilterBand() {
+	m_FilterFont = AtlCreateControlFont();
+	CClientDC dc(m_hWnd);
+	auto oldFont = dc.SelectFont(m_FilterFont);
+	TEXTMETRIC tm;
+	dc.GetTextMetrics(&tm);
+	dc.SelectFont(oldFont);
+
+	//
+	// create a plain edit and subclass it, so the dark mode support recognizes its class name
+	//
+	CEdit edit;
+	CRect rc(0, 0, FilterWidth, tm.tmHeight + 8);
+	edit.Create(m_hWnd, rc, nullptr, WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
+	m_Filter.SubclassWindow(edit);
+	m_Filter.SetFont(m_FilterFont);
+	m_Filter.SetWatermark(L"Filter (Ctrl+Q)");
+	m_Filter.SetWatermarkIcon(AtlLoadIconImage(IDI_FILTER, 0, 16, 16));
+
+	CReBarCtrl rb(m_hWndToolBar);
+	REBARBANDINFO band = { sizeof(band) };
+	band.fMask = RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_SIZE | RBBIM_STYLE;
+	band.fStyle = RBBS_CHILDEDGE;
+	band.hwndChild = m_Filter;
+	band.cx = band.cxMinChild = FilterWidth;
+	band.cyMinChild = rc.Height();
+	rb.InsertBand(-1, &band);
+
+	//
+	// the rebar stretches bands to fill the row, which would widen the toolbar or the filter band;
+	// a trailing spacer band with a large requested width takes up the remaining space instead
+	//
+	CStatic spacer;
+	spacer.Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE);
+	REBARBANDINFO filler = { sizeof(filler) };
+	filler.fMask = RBBIM_CHILD | RBBIM_CHILDSIZE | RBBIM_STYLE | RBBIM_SIZE;
+	filler.fStyle = RBBS_NOGRIPPER;
+	filler.hwndChild = spacer;
+	filler.cx = 10000;
+	filler.cyMinChild = rc.Height();
+	rb.InsertBand(-1, &filler);
+
+	//
+	// keep the toolbar at its full width
+	//
+	rb.LockBands(true);
+	rb.MaximizeBand(0, TRUE);
+}
+
+LRESULT CMainFrame::OnFilterChanged(WORD, WORD, HWND, BOOL&) {
+	CString text;
+	m_Filter.GetWindowText(text);
+	if (auto view = GetActiveView())
+		view->SetFilter(text);
+	return 0;
+}
+
+LRESULT CMainFrame::OnQuickFilter(WORD, WORD, HWND, BOOL&) {
+	m_Filter.SetFocus();
+	return 0;
 }
 
 LRESULT CMainFrame::OnSearchFind(WORD, WORD, HWND, BOOL&) {
