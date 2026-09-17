@@ -2,11 +2,10 @@
 //
 
 #include "pch.h"
-#include "resource.h"
 #include "MainFrm.h"
 #include "AppSettings.h"
 #include "SecurityHelper.h"
-#include <ThemeHelper.h>
+#include <WTLHelper.h>
 
 CAppModule _Module;
 AppSettings _Settings;
@@ -31,7 +30,7 @@ int Run(LPTSTR /*lpstrCmdLine*/ = nullptr, int nCmdShow = SW_SHOWDEFAULT) {
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
-	HRESULT hRes = ::CoInitialize(nullptr);
+	HRESULT hRes = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	ATLASSERT(SUCCEEDED(hRes));
 
 	AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES);
@@ -42,7 +41,12 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (SecurityHelper::IsRunningElevated())
 		SecurityHelper::EnablePrivilege(SE_DEBUG_NAME);
 
-	ThemeHelper::Init();
+	auto loaded = AppSettings::Get().LoadFromKey(L"Software\\ScorpioSoftware\\DbgPrint");
+	if (loaded)
+		WTLHelper::InitDarkMode(AppSettings::Get().DarkMode() ? DarkModeKind::Dark : DarkModeKind::Classic);
+	else
+		WTLHelper::InitDarkMode();
+
 	int nRet = Run(lpstrCmdLine, nCmdShow);
 
 	_Module.Term();

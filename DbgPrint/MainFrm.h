@@ -1,14 +1,12 @@
 #pragma once
 
-#include "OwnerDrawnMenu.h"
 #include "DebugView.h"
 #include "Interfaces.h"
-#include <Theme.h>
-#include <CustomTabView.h>
+#include <NativeCustomTabView.h>
+#include "resource.h"
 
 class CMainFrame : 
 	public CFrameWindowImpl<CMainFrame>, 
-	public COwnerDrawnMenu<CMainFrame>,
 	public CAutoUpdateUI<CMainFrame>,
 	public IMainFrame,
 	public CMessageFilter, 
@@ -61,18 +59,15 @@ protected:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		CHAIN_MSG_MAP(CAutoUpdateUI<CMainFrame>)
 		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
-		CHAIN_MSG_MAP(COwnerDrawnMenu<CMainFrame>)
 		REFLECT_NOTIFICATIONS_EX()
 	END_MSG_MAP()
 
 private:
 	void SetAlwaysOnTop(bool alwaysOnTop);
-	void InitMenu();
+	void InitMenu(HMENU hMenu);
 	void InitToolBar(CToolBarCtrl& tb) const;
 	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
-	void InitDarkTheme();
-	void SetDarkMode(bool dark);
 
 // Handler prototypes (uncomment arguments if needed):
 //	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -106,10 +101,9 @@ private:
 	LRESULT OnSearchFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	CCustomTabView m_Tabs;
+	CNativeCustomTabView m_Tabs;
 	CDebugView* m_pActiveView;
 	CFont m_Font;
-	Theme m_DarkTheme, m_DefaultTheme{ true };
 	CFindReplaceDialog* m_pFindDlg{ nullptr };
 	CString m_SearchText;
 };

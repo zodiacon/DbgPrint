@@ -79,6 +79,9 @@ BEGIN
     BEGIN
         MENUITEM "&Auto Scroll",                ID_VIEW_AUTOSCROLL
         MENUITEM SEPARATOR
+        MENUITEM "Filter...",                   ID_SEARCH_FILTER
+        MENUITEM "&Highlight...",               ID_EDIT_HIGHLIGHT
+        MENUITEM SEPARATOR
         MENUITEM "Next &Bookmark",              ID_VIEW_NEXTBOOKMARK
         MENUITEM "&Previous Bookmark",          ID_VIEW_PREVIOUSBOOKMARK
         MENUITEM "&First Bookmark",             ID_VIEW_FIRSTBOOKMARK
@@ -92,7 +95,6 @@ BEGIN
         MENUITEM "&Find...\tCtrl+F",            ID_SEARCH_FIND
         MENUITEM "Find &Next\tF3",              ID_SEARCH_FINDNEXT
         MENUITEM "&Quick Find\tCtrl+Q",         ID_SEARCH_QUICKFIND
-        MENUITEM "Filter...",                   ID_SEARCH_FILTER
     END
     POPUP "&Capture"
     BEGIN
@@ -208,7 +210,7 @@ CAPTION "About Debug Print"
 FONT 9, "Segoe UI", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,69,60,50,14
-    CTEXT           "Debug Print v0.2",IDC_VERSION,41,10,111,11
+    CTEXT           "Debug Print v0.3.1",IDC_VERSION,41,10,111,11
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
     CONTROL         "<a>https://github.com/zodiacon/dbgprint</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,33,39,130,14
@@ -348,8 +350,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,0,0
- PRODUCTVERSION 0,3,0,0
+ FILEVERSION 0,3,2,0
+ PRODUCTVERSION 0,3,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -366,12 +368,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Scorpio Software"
             VALUE "FileDescription", "Debug User/Kernel Output"
-            VALUE "FileVersion", "0.3.0.0"
+            VALUE "FileVersion", "0.3.2.0"
             VALUE "InternalName", "DbgPrint"
-            VALUE "LegalCopyright", "©2021-2023 Pavel Yosifovich"
+            VALUE "LegalCopyright", "©2021-2026 Pavel Yosifovich"
             VALUE "OriginalFilename", "DbgPrint.exe"
             VALUE "ProductName", "Debug Print"
-            VALUE "ProductVersion", "0.3"
+            VALUE "ProductVersion", "0.3.2.0"
         END
     END
     BLOCK "VarFileInfo"

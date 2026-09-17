@@ -8,7 +8,7 @@
 #include "Helpers.h"
 #include "PropertiesDlg.h"
 #include "CommentDlg.h"
-#include <ThemeHelper.h>
+#include <WTLHelper.h>
 #include "resource.h"
 #include "DebugLogPersist.h"
 #include "HighlightDlg.h"
@@ -294,9 +294,9 @@ LRESULT CDebugView::OnSetFont(UINT, WPARAM wp, LPARAM, BOOL&) {
 LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CSimpleFileDialog dlg(FALSE, L"txt", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
 		L"Text Files (*.txt)\0*.txt\0All Files\0*.*\0", m_hWnd);
-	ThemeHelper::Suspend();
+	WTLHelper::SuspendHook();
 	auto ok = IDOK == dlg.DoModal();
-	ThemeHelper::Resume();
+	WTLHelper::ResumeHook();
 	if(ok) {
 		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",");
 		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, 0, nullptr));
@@ -445,9 +445,9 @@ LRESULT CDebugView::OnDeleteAllBookmarks(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 LRESULT CDebugView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CSimpleFileDialog dlg(FALSE, L"dbgp", L"log", OFN_EXPLORER | OFN_ENABLESIZING | OFN_OVERWRITEPROMPT,
 		L"DebugPrint Native Files (*.dbgp)\0*.dbgp\0CSV Files (*.csv)\0*.csv\0", m_hWnd);
-	ThemeHelper::Suspend();
+	WTLHelper::SuspendHook();
 	auto ok = IDOK == dlg.DoModal();
-	ThemeHelper::Resume();
+	WTLHelper::ResumeHook();
 	if (ok) {
 		auto ext = wcsrchr(dlg.m_szFileTitle, L'.');
 		auto format = ext && _wcsicmp(ext, L".dbgp") == 0 ? PersistFormat::Native : PersistFormat::CSV;

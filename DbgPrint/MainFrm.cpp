@@ -10,7 +10,7 @@
 #include "SecurityHelper.h"
 #include "AppSettings.h"
 #include "Helpers.h"
-#include <ThemeHelper.h>
+#include <WTLHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
 	if (m_pFindDlg && m_pFindDlg->IsDialogMessageW(pMsg))
@@ -24,12 +24,8 @@ BOOL CMainFrame::OnIdle() {
 	return FALSE;
 }
 
-void CMainFrame::InitMenu() {
-	AddMenu(GetMenu());
-	struct {
-		UINT id, icon;
-		HICON hIcon = nullptr;
-	} cmds[] = {
+void CMainFrame::InitMenu(HMENU hMenu) {
+	MenuItemData cmds[] = {
 		{ ID_FILE_RUNASADMINISTRATOR, 0, IconHelper::GetShieldIcon() },
 		{ ID_EDIT_COPY, IDI_COPY },
 		{ ID_SEARCH_FIND, IDI_FIND },
@@ -47,12 +43,7 @@ void CMainFrame::InitMenu() {
 		{ ID_VIEW_NEXTBOOKMARK, IDI_BOOKMARK_NEXT },
 		{ ID_VIEW_PREVIOUSBOOKMARK, IDI_BOOKMARK_PREV },
 	};
-	for (auto& cmd : cmds) {
-		if (cmd.icon)
-			AddCommand(cmd.id, cmd.icon);
-		else
-			AddCommand(cmd.id, cmd.hIcon);
-	}
+	WTLHelper::InitMenu(hMenu, cmds, _countof(cmds));
 }
 
 void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
@@ -99,16 +90,13 @@ void CMainFrame::InitToolBar(CToolBarCtrl& tb) const {
 }
 
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	InitDarkTheme();
 	if (SecurityHelper::IsRunningElevated()) {
 		CMenuHandle menu(GetMenu());
 		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
 		menu.GetSubMenu(0).DeleteMenu(0, MF_BYPOSITION);
 	}
-	SetCheckIcon(AtlLoadIconImage(IDI_OK));
 
 	auto& settings = AppSettings::Get();
-	settings.LoadFromKey(L"Software\\ScorpioSoftware\\DbgPrint");
 
 	auto font = settings.Font();
 	if (font.lfHeight == 0)
@@ -116,7 +104,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	else
 		m_Font.CreateFontIndirect(&font);
 
-	InitMenu();
+	InitMenu(GetMenu());
 	UIAddMenu(GetMenu());
 
 	CToolBarCtrl tb;
@@ -164,7 +152,10 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateDebugOutputView(L"Real-time Log");
 
 	SetAlwaysOnTop(settings.AlwaysOnTop());
-	SetDarkMode(AppSettings::Get().DarkMode());
+	if (settings.DarkMode()) {
+		WTLHelper::SwitchToMode(DarkModeKind::Dark, m_hWnd);
+		UISetCheck(ID_OPTIONS_DARKMODE, true);
+	}
 
 	auto pLoop = _Module.GetMessageLoop();
 	ATLASSERT(pLoop != NULL);
@@ -303,7 +294,8 @@ LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 }
 
 BOOL CMainFrame::TrackPopupMenu(HMENU hMenu, DWORD flags, int x, int y, HWND hWnd) {
-	return ShowContextMenu(hMenu, flags, x, y, hWnd);
+	InitMenu(hMenu);
+	return ::TrackPopupMenuEx(hMenu, flags, x, y, hWnd ? hWnd : m_hWnd, nullptr);
 }
 
 LRESULT CMainFrame::OnEnableKernelComponents(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -339,41 +331,13 @@ LRESULT CMainFrame::OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
-void CMainFrame::InitDarkTheme() {
-	m_DarkTheme.BackColor = m_DarkTheme.SysColors[COLOR_WINDOW] = RGB(32, 32, 32);
-	m_DarkTheme.TextColor = m_DarkTheme.SysColors[COLOR_WINDOWTEXT] = RGB(248, 248, 248);
-	m_DarkTheme.SysColors[COLOR_HIGHLIGHT] = RGB(10, 10, 160);
-	m_DarkTheme.SysColors[COLOR_HIGHLIGHTTEXT] = RGB(240, 240, 240);
-	m_DarkTheme.SysColors[COLOR_MENUTEXT] = m_DarkTheme.TextColor;
-	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
-	m_DarkTheme.SysColors[COLOR_BTNFACE] = m_DarkTheme.BackColor;
-	m_DarkTheme.SysColors[COLOR_BTNTEXT] = m_DarkTheme.TextColor;
-	m_DarkTheme.SysColors[COLOR_3DLIGHT] = RGB(192, 192, 192);
-	m_DarkTheme.SysColors[COLOR_BTNHIGHLIGHT] = RGB(192, 192, 192);
-	m_DarkTheme.SysColors[COLOR_CAPTIONTEXT] = m_DarkTheme.TextColor;
-	m_DarkTheme.SysColors[COLOR_3DSHADOW] = m_DarkTheme.TextColor;
-	m_DarkTheme.SysColors[COLOR_SCROLLBAR] = m_DarkTheme.BackColor;
-	m_DarkTheme.Name = L"Dark";
-	m_DarkTheme.Menu.BackColor = m_DarkTheme.BackColor;
-	m_DarkTheme.Menu.TextColor = m_DarkTheme.TextColor;
-	m_DarkTheme.StatusBar.BackColor = m_DarkTheme.BackColor;
-	m_DarkTheme.StatusBar.TextColor = m_DarkTheme.TextColor;
-}
-
 LRESULT CMainFrame::OnDarkMode(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto dark = !AppSettings::Get().DarkMode();
-	AppSettings::Get().DarkMode(dark);
-	SetDarkMode(dark);
-	return 0;
-}
-
-void CMainFrame::SetDarkMode(bool dark) {
-	ThemeHelper::SetCurrentTheme(dark ? m_DarkTheme : m_DefaultTheme, m_hWnd);
-	ThemeHelper::UpdateMenuColors(*this, dark);
-	UpdateMenu(GetMenu(), true);
+	WTLHelper::SwitchToMode(WTLHelper::IsDarkMode() ? DarkModeKind::Light : DarkModeKind::Dark, m_hWnd);
 	DrawMenuBar();
-
-	UISetCheck(ID_OPTIONS_DARKMODE, dark);
+	InitMenu(GetMenu());
+	AppSettings::Get().DarkMode(WTLHelper::IsDarkMode());
+	UISetCheck(ID_OPTIONS_DARKMODE, WTLHelper::IsDarkMode());
+	return 0;
 }
 
 LRESULT CMainFrame::OnConfirmErase(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

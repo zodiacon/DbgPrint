@@ -87,13 +87,14 @@
 #define ID_SEARCH_FILTER                32812
 #define ID_EDIT_HIGHLIGHT32813          32813
 #define ID_SEARCH_FINDNEXT              32816
+#define ID_VIEW_HIGHLIGHT               32819
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        232
-#define _APS_NEXT_COMMAND_VALUE         32819
+#define _APS_NEXT_COMMAND_VALUE         32820
 #define _APS_NEXT_CONTROL_VALUE         1020
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
