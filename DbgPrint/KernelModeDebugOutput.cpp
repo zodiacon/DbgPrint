@@ -20,6 +20,9 @@ namespace {
 
 	// how long a message waits for its stack walk event before being reported without a stack
 	const ULONGLONG PendingTimeout = 1000;
+
+	// how long Stop waits for the processing thread to drain the remaining events
+	const DWORD StopTimeout = 5000;
 }
 
 KernelModeDebugOutput::~KernelModeDebugOutput() {
@@ -31,10 +34,22 @@ void KernelModeDebugOutput::SetCaptureStacks(bool capture) {
 }
 
 bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
-    m_sink = sink;
-
-	if (m_handle || m_hTrace)
+	if (m_handle || m_hTrace) {
+		m_sink = sink;
 		return true;
+	}
+
+	//
+	// a processing thread that did not exit in time during Stop still uses this object
+	//
+	if (m_hThread) {
+		if (::WaitForSingleObject(m_hThread.get(), 0) == WAIT_TIMEOUT)
+			return false;
+		m_hThread.reset();
+		FlushPending(true);
+	}
+
+	m_sink = sink;
 
 	//
 	// Windows 8+ supports multiple system loggers, so use a private session
@@ -98,13 +113,20 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 		return TRUE;
 	};
 	m_hTrace = ::OpenTrace(&m_traceLog);
-	if (!m_hTrace)
+	if (m_hTrace == INVALID_PROCESSTRACE_HANDLE) {
+		m_hTrace = 0;
+		Stop();
 		return false;
+	}
 
 	// create a dedicated thread to process the trace
 	m_hThread.reset(::CreateThread(nullptr, 0, [](auto param) {
 		return ((KernelModeDebugOutput*)param)->Process();
 		}, this, 0, nullptr));
+	if (!m_hThread) {
+		Stop();
+		return false;
+	}
 	::SetThreadPriority(m_hThread.get(), THREAD_PRIORITY_HIGHEST);
 	return true;
 }
@@ -118,9 +140,19 @@ bool KernelModeDebugOutput::Stop() {
 		::CloseTrace(m_hTrace);
 		m_hTrace = 0;
 	}
-	if (WAIT_TIMEOUT == ::WaitForSingleObject(m_hThread.get(), 1000))
-		DebugBreak();
-	m_hThread.reset();
+	if (m_hThread) {
+		//
+		// ProcessTrace returns once the remaining buffers have been delivered
+		//
+		if (::WaitForSingleObject(m_hThread.get(), StopTimeout) == WAIT_TIMEOUT) {
+			//
+			// keep the handle so Run does not start a second consumer while this one drains
+			//
+			ATLTRACE(L"Kernel trace processing thread did not exit in time\n");
+			return false;
+		}
+		m_hThread.reset();
+	}
 
 	//
 	// the processing thread is gone, so the pending messages can be flushed safely
