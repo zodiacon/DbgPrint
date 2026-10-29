@@ -14,6 +14,29 @@
 #include "HighlightDlg.h"
 #include <shlwapi.h>
 
+namespace {
+	//
+	// messages are 8-bit text: use UTF-8 if the text is valid UTF-8, otherwise the ANSI code page
+	//
+	std::wstring ToWide(PCSTR text) {
+		int len = (int)strlen(text);
+		if (len == 0)
+			return {};
+
+		UINT codePage = CP_UTF8;
+		DWORD flags = MB_ERR_INVALID_CHARS;
+		int count = ::MultiByteToWideChar(codePage, flags, text, len, nullptr, 0);
+		if (count == 0) {
+			codePage = CP_ACP;
+			flags = 0;
+			count = ::MultiByteToWideChar(codePage, flags, text, len, nullptr, 0);
+		}
+		std::wstring result(count, L'\0');
+		::MultiByteToWideChar(codePage, flags, text, len, result.data(), count);
+		return result;
+	}
+}
+
 CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
 }
 
@@ -88,17 +111,7 @@ CString CDebugView::GetColumnText(HWND h, int row, int col) const {
 
 	switch (GetColumnManager(h)->GetColumnTag<ColumnType>(col)) {
 		case ColumnType::Index: text.Format(L"%u", item.Index); break;
-		case ColumnType::Time:
-			if (item.LocalTimeAsString.IsEmpty()) {
-				FILETIME ft;
-				::FileTimeToLocalFileTime(&item.SystemTime, &ft);
-				SYSTEMTIME st;
-				::FileTimeToSystemTime(&ft, &st);
-				item.LocalTimeAsString.Format(L"%02d:%02d:%02d.%03d%03d", 
-					st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, ft.dwLowDateTime * 10 % 1000);
-
-			}
-			return item.LocalTimeAsString;
+		case ColumnType::Time: return item.LocalTime();
 
 		case ColumnType::ProcessId: text.Format(L"%u", item.Process.ProcessId); break;
 		case ColumnType::ProcessName: return item.ProcessName.c_str();
@@ -172,7 +185,7 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	auto item = std::make_unique<DebugItem>();
 	item->ProcessName = m_pm.GetProcessName(pid);
 	item->Process = m_pm.GetProcessKey(pid);
-	item->Text.assign(text, text + strlen(text) + 1);
+	item->Text = ToWide(text);
 	item->SystemTime = time;
 	item->Flags = flags;
 	item->Stack = std::move(stack);
@@ -349,12 +362,18 @@ LRESULT CDebugView::OnSaveAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	WTLHelper::ResumeHook();
 	if(ok) {
 		auto text = ListViewHelper::GetAllRowsAsString(m_List, L",");
-		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, OPEN_ALWAYS, 0, nullptr));
+		wil::unique_hfile hFile(::CreateFile(dlg.m_szFileName, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr));
 		if (!hFile) {
 			Helpers::ReportError(L"Error: ");
 			return 0;
 		}
-		if (DWORD bytes; !::WriteFile(hFile.get(), text.GetBuffer(), text.GetLength() * sizeof(WCHAR), &bytes, nullptr)) {
+		//
+		// UTF-16 with a byte order mark, so editors detect the encoding
+		//
+		const WCHAR bom = 0xFEFF;
+		DWORD bytes;
+		if (!::WriteFile(hFile.get(), &bom, sizeof(bom), &bytes, nullptr) ||
+			!::WriteFile(hFile.get(), (PCWSTR)text, text.GetLength() * sizeof(WCHAR), &bytes, nullptr)) {
 			Helpers::ReportError(L"Error: ");
 			return 0;
 		}
@@ -451,12 +470,13 @@ LRESULT CDebugView::OnToggleBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT CDebugView::OnNextBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int n = m_List.GetSelectionMark();
 	int count = m_List.GetItemCount();
+	int n = m_List.GetSelectionMark();	// -1 if nothing is selected, so the search starts at the first item
 	int next = -1;
-	for (int i = n + 1; i < count + n; i++) {
-		if ((m_Items[i % count]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
-			next = i % count;
+	for (int i = 1; i <= count; i++) {
+		int index = (n + i) % count;
+		if ((m_Items[index]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
+			next = index;
 			break;
 		}
 	}
@@ -468,12 +488,15 @@ LRESULT CDebugView::OnNextBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 }
 
 LRESULT CDebugView::OnPrevBookmark(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int n = m_List.GetSelectionMark();
 	int count = m_List.GetItemCount();
+	int n = m_List.GetSelectionMark();
+	if (n < 0)
+		n = count;	// nothing selected: start at the last item
 	int next = -1;
-	for (int i = n - 1 + count; i >= n; i--) {
-		if ((m_Items[i % count]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
-			next = i % count;
+	for (int i = 1; i <= count; i++) {
+		int index = (n - i % count + count) % count;
+		if ((m_Items[index]->Flags & DebugOutputFlags::Bookmark) == DebugOutputFlags::Bookmark) {
+			next = index;
 			break;
 		}
 	}

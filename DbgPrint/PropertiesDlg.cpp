@@ -22,7 +22,7 @@ LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
     SetDlgItemInt(IDC_PID, m_Item.Process.ProcessId, FALSE);
     SetDlgItemInt(IDC_INDEX, m_Item.Index, FALSE);
-    SetDlgItemText(IDC_TIME, m_Item.LocalTimeAsString);
+    SetDlgItemText(IDC_TIME, m_Item.LocalTime());
     SetDlgItemText(IDC_NAME, m_Item.ProcessName.c_str());
     auto pi = m_pm.GetProcessInfo(m_Item.Process);
     SetDlgItemText(IDC_PATH, pi->FullPath.c_str());

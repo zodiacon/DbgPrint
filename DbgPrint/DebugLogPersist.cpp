@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "DebugLogPersist.h"
-#include <fstream>
+#include <wil\resource.h>
 #include "DebugOutputBase.h"
 #include "Interfaces.h"
 #include <CompoundFile.h>
@@ -63,18 +63,47 @@ bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<D
 	return true;
 }
 
+namespace {
+	//
+	// RFC 4180 field: quoted, with embedded quotes doubled (commas and newlines are then allowed)
+	//
+	void AppendCsvField(CString& line, std::wstring_view text) {
+		line += L'"';
+		for (auto ch : text) {
+			if (ch == L'"')
+				line += L'"';
+			line += ch;
+		}
+		line += L'"';
+	}
+}
+
 bool DebugLogPersist::SaveCSV(std::vector<std::shared_ptr<DebugItem>> const& items, std::wstring_view path) {
-	std::wofstream stm;
-	stm.open(path.data(), std::ios_base::out);
-	if (!stm)
+	CString text(L"Index,Time,PID,Process Name,Source,Text,Comment\r\n");
+	for (auto const& item : items) {
+		CString line;
+		line.Format(L"%u,%s,%u,", item->Index, (PCWSTR)item->LocalTime(), item->Process.ProcessId);
+		AppendCsvField(line, item->ProcessName);
+		line += (item->Flags & DebugOutputFlags::Kernel) == DebugOutputFlags::Kernel ? L",Kernel," : L",User,";
+		AppendCsvField(line, item->Text);
+		line += L',';
+		AppendCsvField(line, item->Comment);
+		line += L"\r\n";
+		text += line;
+	}
+
+	//
+	// UTF-8 with a byte order mark, which Excel needs to detect the encoding
+	//
+	CStringA utf8(CW2A(text, CP_UTF8));
+	wil::unique_hfile hFile(::CreateFile(path.data(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr));
+	if (!hFile)
 		return false;
 
-	for (auto const& item : items) {
-		stm << item->Index << "," << *(uint64_t*)&item->SystemTime << "," << (PCWSTR)item->LocalTimeAsString << ","
-			<< item->ProcessName << "," << item->Process << "," << (DWORD)item->Flags << ","
-			<< item->Text << "," << item->Text << "\n";
-	}
-	return true;
+	const BYTE bom[] = { 0xEF, 0xBB, 0xBF };
+	DWORD bytes;
+	return ::WriteFile(hFile.get(), bom, sizeof(bom), &bytes, nullptr) &&
+		::WriteFile(hFile.get(), (PCSTR)utf8, utf8.GetLength(), &bytes, nullptr);
 }
 
 bool DebugLogPersist::SaveNative(std::vector<std::shared_ptr<DebugItem>> const& items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {

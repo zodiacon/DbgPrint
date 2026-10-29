@@ -36,6 +36,9 @@ struct DebugItem {
 	void* operator new(size_t size);
 	void operator delete(void* p);
 
+	// local time as hh:mm:ss.mmmuuu, formatted on first use
+	CString const& LocalTime() const;
+
 	ProcessKey Process;
 	std::wstring Text;
 	FILETIME SystemTime;
