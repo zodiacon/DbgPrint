@@ -26,9 +26,8 @@ bool UserModeDebugOutput::Run(IDebugOutput* sink) {
 			return false;
 	}
 
-	DWORD size = 1 << 12;	// 4KB
 	if (!m_hMemFile) {
-		m_hMemFile.reset(::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, size, m_prefix + L"\\DBWIN_BUFFER"));
+		m_hMemFile.reset(::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, BufferSize, m_prefix + L"\\DBWIN_BUFFER"));
 		if (m_hMemFile == nullptr)
 			return false;
 	}
@@ -77,7 +76,12 @@ DWORD UserModeDebugOutput::DebugListen() {
 		FILETIME st;
 		::GetSystemTimeAsFileTime(&st);
 		DWORD pid = *(DWORD*)m_buffer;
-		m_sink->DebugOutput(pid, (PCSTR)(m_buffer + sizeof(DWORD)), st);
+		//
+		// any process that can open the section can write to it, so don't rely on a terminating NUL
+		//
+		auto text = (PCSTR)(m_buffer + sizeof(DWORD));
+		std::string message(text, strnlen(text, BufferSize - sizeof(DWORD)));
+		m_sink->DebugOutput(pid, message.c_str(), st);
 	}
 
 	return 0;

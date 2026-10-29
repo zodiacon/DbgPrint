@@ -43,6 +43,7 @@ private:
 
 	DebugItem const& m_Item;
 	CString m_Comment, m_Text;
+	CString m_DisplayText;	// text as shown in the edit control (CRLF line breaks)
 	ImageIconCache const& m_IconCache;
 	ProcessManager const& m_pm;
 };

@@ -190,7 +190,8 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	item->Flags = flags;
 	item->Stack = std::move(stack);
 	item->Index = InterlockedIncrement(&s_Index);
-	item->Image = pid <= 4 ? 0 : m_IconCache.GetIcon(m_pm.GetProcessInfo(item->Process)->FullPath);
+	auto pi = pid <= 4 ? nullptr : m_pm.GetProcessInfo(item->Process);
+	item->Image = pi ? m_IconCache.GetIcon(pi->FullPath) : 0;
 	std::lock_guard locker(m_Lock);
 	m_TempItems.push_back(std::move(item));
 }

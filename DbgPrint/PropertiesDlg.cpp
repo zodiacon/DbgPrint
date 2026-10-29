@@ -24,19 +24,19 @@ LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     SetDlgItemInt(IDC_INDEX, m_Item.Index, FALSE);
     SetDlgItemText(IDC_TIME, m_Item.LocalTime());
     SetDlgItemText(IDC_NAME, m_Item.ProcessName.c_str());
-    auto pi = m_pm.GetProcessInfo(m_Item.Process);
-    SetDlgItemText(IDC_PATH, pi->FullPath.c_str());
-    SetDlgItemText(IDC_CMDLINE, pi->CommandLine.c_str());
-
-    int start = 0;
-    CString text = m_Item.Text.c_str();
-    while ((start = text.Find(L"\n", start)) >= 0) {
-        if(text[start + 1] != L'\r')
-            text = text.Left(start) + L"\r\n" + text.Mid(start + 1);
-        start += 2;
+    if (auto pi = m_pm.GetProcessInfo(m_Item.Process)) {
+        SetDlgItemText(IDC_PATH, pi->FullPath.c_str());
+        SetDlgItemText(IDC_CMDLINE, pi->CommandLine.c_str());
     }
 
-    SetDlgItemText(IDC_TEXT, text);
+    //
+    // the edit control needs CRLF line breaks; messages may use either LF or CRLF
+    //
+    m_DisplayText = m_Item.Text.c_str();
+    m_DisplayText.Replace(L"\r\n", L"\n");
+    m_DisplayText.Replace(L"\n", L"\r\n");
+
+    SetDlgItemText(IDC_TEXT, m_DisplayText);
     SetDlgItemText(IDC_COMMENT, m_Item.Comment.c_str());
     InitStack();
 
@@ -68,6 +68,13 @@ LRESULT CPropertiesDlg::OnCloseCmd(WORD, WORD wID, HWND, BOOL&) {
     if (wID == IDOK) {
         GetDlgItemText(IDC_COMMENT, m_Comment);
         GetDlgItemText(IDC_TEXT, m_Text);
+        //
+        // keep the original text (and its line breaks) unless it was edited
+        //
+        if (m_Text == m_DisplayText)
+            m_Text = m_Item.Text.c_str();
+        else
+            m_Text.Replace(L"\r\n", L"\n");
     }
     EndDialog(wID);
     return 0;

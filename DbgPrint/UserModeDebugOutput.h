@@ -15,6 +15,9 @@ public:
 private:
 	DWORD DebugListen();
 
+	// DBWIN_BUFFER: the writer's process ID followed by the message
+	static const DWORD BufferSize = 1 << 12;
+
 	wil::unique_handle m_hDataReady, m_hMemFile, m_hBufferReady, m_hThread, m_hStop;
 	PBYTE m_buffer{ nullptr };
 	CString m_prefix;
