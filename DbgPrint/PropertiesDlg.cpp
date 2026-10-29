@@ -18,7 +18,8 @@ LRESULT CPropertiesDlg::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
     AppSettings::Get().LoadWindowPosition(m_hWnd, L"PropertiesDlg");
 
     CImageList images(m_IconCache.GetImageList());
-    SetDialogIcon(images.GetIcon(m_Item.Image));
+    m_hIcon.reset(images.GetIcon(m_Item.Image));
+    SetDialogIcon(m_hIcon.get());
 
     SetDlgItemInt(IDC_PID, m_Item.Process.ProcessId, FALSE);
     SetDlgItemInt(IDC_INDEX, m_Item.Index, FALSE);

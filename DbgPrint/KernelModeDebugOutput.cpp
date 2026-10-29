@@ -26,7 +26,11 @@ namespace {
 }
 
 KernelModeDebugOutput::~KernelModeDebugOutput() {
-	Stop();
+	//
+	// the processing thread uses this object, so it must be gone before the memory is freed
+	//
+	if (!Stop() && m_hThread)
+		::WaitForSingleObject(m_hThread.get(), INFINITE);
 }
 
 void KernelModeDebugOutput::SetCaptureStacks(bool capture) {

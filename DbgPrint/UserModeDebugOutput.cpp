@@ -5,10 +5,25 @@ UserModeDebugOutput::UserModeDebugOutput(PCWSTR prefix) : m_prefix(prefix) {
 }
 
 UserModeDebugOutput::~UserModeDebugOutput() {
-	Stop();
+	//
+	// the listening thread uses this object, so it must be gone before the memory is freed
+	//
+	if (!Stop() && m_hThread)
+		::WaitForSingleObject(m_hThread.get(), INFINITE);
+	if (m_buffer)
+		::UnmapViewOfFile(m_buffer);
 }
 
 bool UserModeDebugOutput::Run(IDebugOutput* sink) {
+	//
+	// a listening thread that did not exit in time during Stop still uses the events
+	//
+	if (m_hThread) {
+		if (::WaitForSingleObject(m_hThread.get(), 0) == WAIT_TIMEOUT)
+			return false;
+		m_hThread.reset();
+	}
+
 	m_sink = sink;
 	m_hStop.reset(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
 	if (!m_hStop)
@@ -52,9 +67,11 @@ bool UserModeDebugOutput::Stop() {
 		return true;
 
 	auto rv = ::SignalObjectAndWait(m_hStop.get(), m_hThread.get(), 2000, FALSE);
-	m_hThread.reset();
+	if (rv != WAIT_OBJECT_0)
+		return false;	// keep the handle, the thread is still running
 
-	return rv == WAIT_OBJECT_0;
+	m_hThread.reset();
+	return true;
 }
 
 bool UserModeDebugOutput::IsRunning() const {

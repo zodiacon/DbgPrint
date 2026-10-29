@@ -12,15 +12,16 @@ bool DebugLogPersist::Save(PersistFormat format, std::vector<std::shared_ptr<Deb
 	return format == PersistFormat::Native ? SaveNative(items, iconCache, pm, path) : SaveCSV(items, path);
 }
 
-bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<DebugItem>>& items, ProcessManager& pm) {
+bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<DebugItem>>& items, ImageIconCache& iconCache, ProcessManager& pm) {
 	using namespace StructuredStorage;
 
 	auto file = CompoundFile::Open(path.data());
 	if (!file)
 		return false;
 
-	DWORD count;
-	OpenFileAndRead(file, L"Count", count);
+	DWORD count = 0;
+	if (!OpenFileAndRead(file, L"Count", count))
+		return false;
 	items.reserve(count + items.size());
 
 	for (DWORD i = 0; i < count; i++) {
@@ -39,16 +40,30 @@ bool DebugLogPersist::Load(std::wstring_view path, std::vector<std::shared_ptr<D
 		OpenFileAndRead(dir, L"Comment", item->Comment);
 		OpenFileAndRead(dir, L"Flags", item->Flags);
 		OpenFileAndRead(dir, L"Image", item->Image);
+		OpenFileAndRead(dir, L"Stack", item->Stack);	// not present in older files
 
 		items.push_back(item);
 	}
-	OpenFileAndRead(file, L"ProcessCount", count);
+
+	//
+	// item image indices refer to the saved image list
+	//
+	if (auto images = file.OpenStructuredFile(L"ImageList"))
+		iconCache.Load(images);
+
 	auto pdir = file.OpenStructuredDirectory(L"Processes");
+	if (!pdir)
+		return true;
+
+	DWORD processCount = 0;
+	OpenFileAndRead(pdir, L"ProcessCount", processCount);
 
 	std::vector<std::shared_ptr<StaticProcessInfo>> processes;
-	processes.reserve(count);
-	for (DWORD i = 0; i < count; i++) {
+	processes.reserve(processCount);
+	for (DWORD i = 0; i < processCount; i++) {
 		auto pidir = pdir.OpenStructuredDirectory(std::to_wstring(i));
+		if (!pidir)
+			break;
 		auto pi = std::make_shared<StaticProcessInfo>();
 		OpenFileAndRead(pidir, L"Name", pi->Name);
 		OpenFileAndRead(pidir, L"FullPath", pi->FullPath);
@@ -128,6 +143,8 @@ bool DebugLogPersist::SaveNative(std::vector<std::shared_ptr<DebugItem>> const& 
 		CreateFileAndWrite(dir, L"Image", item->Image);
 		CreateFileAndWrite(dir, L"Comment", item->Comment);
 		CreateFileAndWrite(dir, L"Flags", item->Flags);
+		if (!item->Stack.empty())
+			CreateFileAndWrite(dir, L"Stack", item->Stack);
 	}
 
 	auto images = file.CreateStructuredFile(L"ImageList");

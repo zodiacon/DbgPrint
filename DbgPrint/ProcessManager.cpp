@@ -83,13 +83,15 @@ bool ProcessManager::AddProcess(DWORD pid, PCWSTR name) const {
 	}
 
 	if (name == nullptr) {
-		auto bs = info->FullPath.rfind(L'\\');
-		info->Name = bs == std::wstring::npos ? info->FullPath : info->FullPath.substr(bs + 1);
+		auto path = info->FullPath.empty() ? GetImageNameNoAccess(pid) : info->FullPath;
+		auto bs = path.rfind(L'\\');
+		info->Name = bs == std::wstring::npos ? path : path.substr(bs + 1);
 	}
 	else {
 		info->Name = name;
 	}
 	info->ProcessId = pid;
+	info->Added = ::GetTickCount64();
 	{
 		ProcessKey key{ pid, info->StartTime };
 		std::lock_guard locker(_lock);
@@ -110,26 +112,83 @@ void ProcessManager::Init() {
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(pe);
 
-	::Process32First(hSnapshot, &pe);
-	while (::Process32Next(hSnapshot, &pe)) {
-		AddProcess(pe.th32ProcessID, pe.szExeFile);
+	if (::Process32First(hSnapshot, &pe)) {
+		do {
+			AddProcess(pe.th32ProcessID, pe.szExeFile);
+		} while (::Process32Next(hSnapshot, &pe));
 	}
 	::CloseHandle(hSnapshot);
 }
 
 void ProcessManager::AddProcessIfNotExist(DWORD pid) const {
+	auto now = ::GetTickCount64();
+	if (now - _lastSweep > SweepInterval) {
+		_lastSweep = now;
+		std::lock_guard locker(_lock);
+		CloseExitedProcesses();
+	}
+
+	std::shared_ptr<StaticProcessInfo> existing;
 	{
 		std::shared_lock locker(_lock);
 		if (auto it = _processes.find(pid); it != _processes.end()) {
 			auto& pi = *it->second;
-			if (pi.hProcess && ::WaitForSingleObject(pi.hProcess.get(), 0) == WAIT_TIMEOUT)
+			if (pi.hProcess) {
+				if (::WaitForSingleObject(pi.hProcess.get(), 0) == WAIT_TIMEOUT)
+					return;
+			}
+			else if (now - pi.Added < RetryInterval) {
+				//
+				// the process could not be opened, so it's unknown whether it exited;
+				// don't retry for every message it sends
+				//
 				return;
-			locker.unlock();
-			std::lock_guard locker(_lock);
-			_processes.erase(pid);
+			}
+			existing = it->second;
 		}
 	}
+	if (existing) {
+		std::lock_guard locker(_lock);
+		existing->hProcess.reset();
+		if (auto it = _processes.find(pid); it != _processes.end() && it->second == existing)
+			_processes.erase(it);
+	}
 	AddProcess(pid);
+}
+
+void ProcessManager::CloseExitedProcesses() const {
+	//
+	// caller holds the lock exclusively; the entries stay in _processesByKey for existing items
+	//
+	for (auto it = _processes.begin(); it != _processes.end(); ) {
+		auto& pi = *it->second;
+		if (pi.hProcess && ::WaitForSingleObject(pi.hProcess.get(), 0) == WAIT_OBJECT_0) {
+			pi.hProcess.reset();
+			it = _processes.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+std::wstring ProcessManager::GetImageNameNoAccess(DWORD pid) {
+	//
+	// works for processes that cannot be opened (e.g. protected ones); returns an NT path
+	//
+	struct SYSTEM_PROCESS_ID_INFORMATION {
+		HANDLE ProcessId;
+		UNICODE_STRING ImageName;
+	};
+	const auto SystemProcessIdInformation = (SYSTEM_INFORMATION_CLASS)88;
+
+	WCHAR buffer[MAX_PATH * 2];
+	SYSTEM_PROCESS_ID_INFORMATION info{ ULongToHandle(pid) };
+	info.ImageName.Buffer = buffer;
+	info.ImageName.MaximumLength = sizeof(buffer);
+	if (!NT_SUCCESS(::NtQuerySystemInformation(SystemProcessIdInformation, &info, sizeof(info), nullptr)))
+		return L"";
+	return std::wstring(info.ImageName.Buffer, info.ImageName.Length / sizeof(WCHAR));
 }
 
 void ProcessManager::AddProcess(std::shared_ptr<StaticProcessInfo>& pi) const {

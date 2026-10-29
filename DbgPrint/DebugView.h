@@ -29,6 +29,7 @@ public:
 	DWORD OnItemPrePaint(DWORD, LPNMCUSTOMDRAW cd);
 
 	bool CanClose();
+	void OnFinalMessage(HWND) override;
 	bool IsRealTime() const;
 	bool IsEmpty() const;
 
@@ -104,9 +105,6 @@ private:
 	CListViewCtrl m_List;
 	SortedFilteredVector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
 	std::mutex m_Lock;
-	UserModeDebugOutput m_UserMode;
-	UserModeDebugOutput m_UserModeSession0{ L"Global" };
-	KernelModeDebugOutput m_KernelMode;
 	inline static ULONG s_Index;
 	CUpdateUIBase* m_ui{ nullptr };
 	IMainFrame* m_pFrame;
@@ -116,5 +114,13 @@ private:
 	std::vector<HighlightItem> m_Highlights;
 	CString m_FilterText;
 	bool m_RealTime;
+
+	//
+	// declared last so they are destroyed first: their threads call DebugOutput,
+	// which uses the members above
+	//
+	UserModeDebugOutput m_UserMode;
+	UserModeDebugOutput m_UserModeSession0{ L"Global" };
+	KernelModeDebugOutput m_KernelMode;
 };
 

@@ -23,13 +23,48 @@ int ImageIconCache::GetIcon(std::wstring_view path, HICON* phIcon) const {
 
 	if (hIcon) {
 		std::lock_guard locker(m_lock);
-		int index = m_images.AddIcon(hIcon);
+		//
+		// another thread may have added the same path in the meantime
+		//
+		int index;
+		if (auto it = m_icons.find(wspath); it != m_icons.end()) {
+			index = it->second;
+		}
+		else {
+			index = m_images.AddIcon(hIcon);
+			m_icons.insert({ wspath, index });
+		}
+		//
+		// the image list keeps its own copy of the icon
+		//
 		if (phIcon)
 			*phIcon = hIcon;
-		m_icons.insert({ wspath, index });
+		else
+			::DestroyIcon(hIcon);
 		return index;
 	}
 	return 0;
+}
+
+bool ImageIconCache::Load(IStream* stm) {
+	CImageList images(CImageList::Read(stm));
+	if (!images)
+		return false;
+
+	//
+	// copy into the existing image list, so controls already using it stay valid
+	//
+	std::lock_guard locker(m_lock);
+	m_images.RemoveAll();
+	m_icons.clear();
+	int count = images.GetImageCount();
+	for (int i = 0; i < count; i++) {
+		auto hIcon = images.GetIcon(i);
+		m_images.AddIcon(hIcon);
+		::DestroyIcon(hIcon);
+	}
+	images.Destroy();
+	return true;
 }
 
 ImageIconCache::Map::const_iterator ImageIconCache::begin() const {

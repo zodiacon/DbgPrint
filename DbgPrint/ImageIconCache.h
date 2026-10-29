@@ -9,7 +9,10 @@ public:
 	ImageIconCache& operator=(const ImageIconCache&) = delete;
 
 	HIMAGELIST GetImageList() const;
+	// if phIcon is not null, the caller owns the returned icon
 	int GetIcon(std::wstring_view path, HICON* phIcon = nullptr) const;
+	// replaces the images with ones saved by CImageList::Write
+	bool Load(IStream* stm);
 
 	using Map = std::unordered_map<std::wstring, int>;
 	Map::const_iterator begin() const;

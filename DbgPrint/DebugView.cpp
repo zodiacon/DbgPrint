@@ -170,6 +170,13 @@ bool CDebugView::CanClose() {
 	return !m_RealTime;
 }
 
+void CDebugView::OnFinalMessage(HWND) {
+	//
+	// views are created with new by the main frame, and destroyed with their tab or the frame
+	//
+	delete this;
+}
+
 bool CDebugView::IsRealTime() const {
 	return m_RealTime;
 }
@@ -423,7 +430,8 @@ LRESULT CDebugView::OnEditComment(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	auto& item = m_Items[selected];
 	CCommentDlg dlg(item->Comment);
-	if (IDOK == dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(CImageList(m_IconCache.GetImageList()).GetIcon(item->Image)))) {
+	wil::unique_hicon hIcon(CImageList(m_IconCache.GetImageList()).GetIcon(item->Image));
+	if (IDOK == dlg.DoModal(m_hWnd, reinterpret_cast<LPARAM>(hIcon.get()))) {
 		item->Comment = dlg.GetComment();
 		m_List.RedrawItems(selected, selected);
 	}
