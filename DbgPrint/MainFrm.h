@@ -43,6 +43,7 @@ protected:
 		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREUSERMODE, OnCaptureUser)
 		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTURESESSION0, OnCaptureUserSession0)
 		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTUREKERNEL, OnCaptureKernel)
+		COMMAND_ID_HANDLER(ID_CAPTURE_CAPTURESTACKS, OnCaptureStacks)
 		COMMAND_ID_HANDLER(ID_VIEW_AUTOSCROLL, OnAutoScroll)
 		MESSAGE_HANDLER(WM_MENUSELECT, OnMenuSelect)
 		MESSAGE_HANDLER(CFindReplaceDialog::GetFindReplaceMsg(), OnFind)
@@ -94,6 +95,7 @@ private:
 	LRESULT OnCaptureUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCaptureUserSession0(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCaptureKernel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCaptureStacks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnRunAsAdmin(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

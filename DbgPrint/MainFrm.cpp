@@ -149,6 +149,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UISetCheck(ID_CAPTURE_CAPTUREUSERMODE, settings.CaptureUserMode());
 	UISetCheck(ID_CAPTURE_CAPTURESESSION0, settings.CaptureSession0());
 	UISetCheck(ID_CAPTURE_CAPTUREKERNEL, settings.CaptureKernel());
+	UISetCheck(ID_CAPTURE_CAPTURESTACKS, settings.CaptureStacks());
 	UISetCheck(ID_VIEW_AUTOSCROLL, settings.AutoScroll());
 	UISetCheck(ID_OPTIONS_CONFIRMDELETE, settings.ConfirmErase());
 
@@ -161,6 +162,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		}
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, false);
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, false);
+		UIEnable(ID_CAPTURE_CAPTURESTACKS, false);
 	}
 
 	CreateDebugOutputView(L"Real-time Log");
@@ -274,6 +276,14 @@ LRESULT CMainFrame::OnCaptureKernel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
+LRESULT CMainFrame::OnCaptureStacks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	bool capture;
+	AppSettings::Get().CaptureStacks(capture = !AppSettings::Get().CaptureStacks());
+	UISetCheck(ID_CAPTURE_CAPTURESTACKS, capture);
+	m_pActiveView->CaptureStacks(capture);
+	return 0;
+}
+
 LRESULT CMainFrame::OnAutoScroll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	bool autoscroll = !AppSettings::Get().AutoScroll();
 	AppSettings::Get().AutoScroll(autoscroll);
@@ -300,6 +310,7 @@ void CMainFrame::UpdateUI() {
 	if (SecurityHelper::IsRunningElevated()) {
 		UIEnable(ID_CAPTURE_CAPTUREKERNEL, realTime);
 		UIEnable(ID_CAPTURE_CAPTURESESSION0, realTime);
+		UIEnable(ID_CAPTURE_CAPTURESTACKS, realTime);
 	}
 	if (active)
 		m_pActiveView->UpdateUI(this);

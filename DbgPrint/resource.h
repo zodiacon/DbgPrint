@@ -52,6 +52,7 @@
 #define IDC_RESET                       1017
 #define IDC_ADD                         1018
 #define IDC_DELETE                      1019
+#define IDC_STACK                       1020
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
 #define ID_OPTIONS_FONTS                32777
@@ -88,14 +89,15 @@
 #define ID_EDIT_HIGHLIGHT32813          32813
 #define ID_SEARCH_FINDNEXT              32816
 #define ID_VIEW_HIGHLIGHT               32819
+#define ID_CAPTURE_CAPTURESTACKS        32820
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        232
-#define _APS_NEXT_COMMAND_VALUE         32820
-#define _APS_NEXT_CONTROL_VALUE         1020
+#define _APS_NEXT_COMMAND_VALUE         32821
+#define _APS_NEXT_CONTROL_VALUE         1021
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

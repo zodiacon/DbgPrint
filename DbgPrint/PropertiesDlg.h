@@ -39,6 +39,7 @@ protected:
 private:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void InitStack();
 
 	DebugItem const& m_Item;
 	CString m_Comment, m_Text;

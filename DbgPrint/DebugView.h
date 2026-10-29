@@ -38,12 +38,13 @@ public:
 	void CaptureKernel(bool capture);
 	void CaptureUser(bool capture);
 	void CaptureSession0(bool capture);
-	
+	void CaptureStacks(bool capture);
+
 	void UpdateUI(CUpdateUIBase* ui);
 	void SetFilter(CString const& text);
 	CString const& GetFilter() const;
 
-	void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags) override;
+	void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags, std::vector<ULONG64> stack) override;
 
 protected:
 	BEGIN_MSG_MAP(CDebugView)

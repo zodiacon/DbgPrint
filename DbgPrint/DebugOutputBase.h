@@ -11,7 +11,8 @@ enum class DebugOutputFlags {
 DEFINE_ENUM_FLAG_OPERATORS(DebugOutputFlags);
 
 struct IDebugOutput {
-	virtual void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags = DebugOutputFlags::None) = 0;
+	virtual void DebugOutput(DWORD pid, PCSTR text, FILETIME const&, DebugOutputFlags flags = DebugOutputFlags::None,
+		std::vector<ULONG64> stack = {}) = 0;
 };
 
 struct DebugOutputBase abstract {
@@ -44,4 +45,5 @@ struct DebugItem {
 	DebugOutputFlags Flags;
 	std::wstring Comment;
 	int Image{ -1 };
+	std::vector<ULONG64> Stack;
 };

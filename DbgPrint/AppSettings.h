@@ -24,6 +24,7 @@ struct AppSettings : Settings {
 		SETTING(CaptureUserMode, 1, SettingType::Bool);
 		SETTING(CaptureSession0, 0, SettingType::Bool);
 		SETTING(CaptureKernel, 0, SettingType::Bool);
+		SETTING(CaptureStacks, 0, SettingType::Bool);
 		SETTING(AutoScroll, 0, SettingType::Bool);
 		SETTING(BookmarkColor, RGB(0, 255, 0), SettingType::Int32);
 		SETTING(HightlightItems, DefaultHighlightColors, SettingType::Binary);
@@ -39,6 +40,7 @@ struct AppSettings : Settings {
 	DEF_SETTING(CaptureUserMode, int)
 	DEF_SETTING(CaptureSession0, int)
 	DEF_SETTING(CaptureKernel, int)
+	DEF_SETTING(CaptureStacks, int)
 	DEF_SETTING(AutoScroll, int)
 	DEF_SETTING(HighlightItems, std::vector<HighlightItem>)
 	DEF_SETTING(ConfirmErase, bool);

@@ -165,7 +165,7 @@ bool CDebugView::IsEmpty() const {
 	return m_Items.empty();
 }
 
-void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags) {
+void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugOutputFlags flags, std::vector<ULONG64> stack) {
 	if (!m_Running)
 		return;
 
@@ -175,6 +175,7 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	item->Text.assign(text, text + strlen(text) + 1);
 	item->SystemTime = time;
 	item->Flags = flags;
+	item->Stack = std::move(stack);
 	item->Index = InterlockedIncrement(&s_Index);
 	item->Image = pid <= 4 ? 0 : m_IconCache.GetIcon(m_pm.GetProcessInfo(item->Process)->FullPath);
 	std::lock_guard locker(m_Lock);
@@ -211,8 +212,10 @@ void CDebugView::Capture(bool capture) {
 			m_UserMode.Run(this);
 		if (settings.CaptureSession0())
 			m_UserModeSession0.Run(this);
-		if (settings.CaptureKernel())
+		if (settings.CaptureKernel()) {
+			m_KernelMode.SetCaptureStacks(settings.CaptureStacks());
 			m_KernelMode.Run(this);
+		}
 	}
 	else {
 		m_UserMode.Stop();
@@ -224,7 +227,24 @@ void CDebugView::Capture(bool capture) {
 void CDebugView::CaptureKernel(bool capture) {
 	if (!m_Running)
 		return;
-	capture ? m_KernelMode.Run(this) : m_KernelMode.Stop();
+	if (capture) {
+		m_KernelMode.SetCaptureStacks(AppSettings::Get().CaptureStacks());
+		m_KernelMode.Run(this);
+	}
+	else {
+		m_KernelMode.Stop();
+	}
+}
+
+void CDebugView::CaptureStacks(bool capture) {
+	m_KernelMode.SetCaptureStacks(capture);
+	if (m_Running && m_KernelMode.IsRunning()) {
+		//
+		// stack tracing is configured when the session starts
+		//
+		m_KernelMode.Stop();
+		m_KernelMode.Run(this);
+	}
 }
 
 void CDebugView::CaptureUser(bool capture) {
