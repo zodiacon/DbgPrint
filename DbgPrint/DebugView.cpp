@@ -306,6 +306,7 @@ LRESULT CDebugView::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	KillTimer(1);
 	m_UserMode.Stop();
 	m_UserModeSession0.Stop();
+	m_KernelMode.Stop();
 	handled = FALSE;
 	return 0;
 }

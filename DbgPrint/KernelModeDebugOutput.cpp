@@ -3,6 +3,10 @@
 
 #pragma comment(lib, "tdh")
 
+KernelModeDebugOutput::~KernelModeDebugOutput() {
+	Stop();
+}
+
 bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
     m_sink = sink;
 
@@ -73,7 +77,7 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 
 bool KernelModeDebugOutput::Stop() {
 	if (m_handle) {
-		::ControlTrace(m_hTrace, KERNEL_LOGGER_NAME, m_properties, EVENT_TRACE_CONTROL_STOP);
+		::ControlTrace(m_handle, KERNEL_LOGGER_NAME, m_properties, EVENT_TRACE_CONTROL_STOP);
 		m_handle = 0;
 	}
 	if (m_hTrace) {

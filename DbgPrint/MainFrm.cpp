@@ -342,8 +342,14 @@ LRESULT CMainFrame::OnTabClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT CMainFrame::OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	while (m_Tabs.GetPageCount() > 0)
-		SendMessage(WM_COMMAND, ID_WINDOWS_CLOSE);
+	//
+	// real-time views cannot be closed, so remove only the pages that allow it
+	//
+	for (int page = m_Tabs.GetPageCount() - 1; page >= 0; page--) {
+		auto view = (CDebugView*)m_Tabs.GetPageData(page);
+		if (view->CanClose())
+			m_Tabs.RemovePage(page);
+	}
 	return 0;
 }
 

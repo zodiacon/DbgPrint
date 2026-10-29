@@ -3,7 +3,7 @@
 #include "resource.h"
 
 int ImageIconCache::GetIcon(std::wstring_view path, HICON* phIcon) const {
-	if (path.empty() || path.find(L'\\') != std::wstring::npos)
+	if (path.empty() || path.find(L'\\') == std::wstring::npos)
 		return 0;
 
 	std::wstring wspath(path);

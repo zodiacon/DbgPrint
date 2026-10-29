@@ -5,6 +5,8 @@
 
 class KernelModeDebugOutput : public DebugOutputBase {
 public:
+	~KernelModeDebugOutput();
+
 	// Inherited via DebugOutputBase
 	bool Run(IDebugOutput* sink) override;
 	bool Stop() override;
