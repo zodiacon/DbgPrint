@@ -37,7 +37,23 @@ namespace {
 	}
 }
 
-CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_RealTime(realTime) {
+CDebugView::CDebugView(IMainFrame* frame, bool realTime) : m_pFrame(frame), m_pm(realTime), m_RealTime(realTime) {
+}
+
+bool CDebugView::Load(PCWSTR path) {
+	ATLASSERT(!m_RealTime);
+
+	std::vector<std::shared_ptr<DebugItem>> items;
+	if (!DebugLogPersist::Load(path, items, m_IconCache, m_pm))
+		return false;
+
+	{
+		std::lock_guard locker(m_Lock);
+		m_Items.clear();
+		m_Items.append(items.begin(), items.end());
+	}
+	UpdateList();
+	return true;
 }
 
 void CDebugView::UpdateList() {
@@ -129,7 +145,10 @@ PCWSTR CDebugView::GetExistingColumnText(HWND h, int row, int col) const {
 }
 
 bool CDebugView::IsSortable(HWND, int col) const {
-	return !AppSettings::Get().Capture();
+	//
+	// a log loaded from a file does not change, so it can be sorted even while capturing
+	//
+	return !m_RealTime || !AppSettings::Get().Capture();
 }
 
 BOOL CDebugView::OnDoubleClickList(HWND, int row, int col, POINT const& pt) {

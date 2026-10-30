@@ -56,8 +56,9 @@ std::wstring ProcessManager::GetProcessName(DWORD pid) const {
 	return L"";
 }
 
-ProcessManager::ProcessManager() {
-	Init();
+ProcessManager::ProcessManager(bool live) {
+	if (live)
+		Init();
 }
 
 bool ProcessManager::AddProcess(DWORD pid, PCWSTR name) const {

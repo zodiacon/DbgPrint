@@ -23,7 +23,8 @@ struct StaticProcessInfo : ProcessKey {
 
 class ProcessManager {
 public:
-	ProcessManager();
+	// live: start with the processes running now (not needed for logs loaded from a file)
+	explicit ProcessManager(bool live = true);
 	std::wstring GetProcessName(DWORD pid) const;
 	PCWSTR GetFullImagePath(DWORD pid) const;
 	ProcessKey GetProcessKey(DWORD pid) const;

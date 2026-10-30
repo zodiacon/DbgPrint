@@ -300,20 +300,23 @@ LRESULT CMainFrame::OnPageActivated(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bH
 }
 
 void CMainFrame::UpdateUI() {
-	auto active = m_Tabs && m_Tabs.GetPageCount() > 0 && m_Tabs.GetPageData(m_Tabs.GetActivePage()) == m_pActiveView;
-	auto realTime = active && m_pActiveView->IsRealTime();
-	UIEnable(ID_WINDOWS_CLOSE, !realTime);
+	auto view = m_Tabs ? GetActiveView() : nullptr;
+	//
+	// the capture commands apply to the view that captures (m_pActiveView), so only enable them on its tab
+	//
+	auto capturing = view && view == m_pActiveView && view->IsRealTime();
+	UIEnable(ID_WINDOWS_CLOSE, view && view->CanClose());
 	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
-	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, realTime);
-	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, realTime);
-	UIEnable(ID_SEARCH_FIND, active);
+	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, capturing);
+	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, capturing);
+	UIEnable(ID_SEARCH_FIND, view != nullptr);
 	if (SecurityHelper::IsRunningElevated()) {
-		UIEnable(ID_CAPTURE_CAPTUREKERNEL, realTime);
-		UIEnable(ID_CAPTURE_CAPTURESESSION0, realTime);
-		UIEnable(ID_CAPTURE_CAPTURESTACKS, realTime);
+		UIEnable(ID_CAPTURE_CAPTUREKERNEL, capturing);
+		UIEnable(ID_CAPTURE_CAPTURESESSION0, capturing);
+		UIEnable(ID_CAPTURE_CAPTURESTACKS, capturing);
 	}
-	if (active)
-		m_pActiveView->UpdateUI(this);
+	if (view)
+		view->UpdateUI(this);
 }
 
 LRESULT CMainFrame::OnMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) const {
@@ -387,6 +390,30 @@ LRESULT CMainFrame::OnNewRealTimeLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		name.Format(L"Real-time Log %d", m_Tabs.GetPageCount() + 1);
 		m_pActiveView = CreateDebugOutputView(name);
 	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnFileOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CSimpleFileDialog dlg(TRUE, L"dbgp", nullptr, OFN_EXPLORER | OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST,
+		L"DebugPrint Native Files (*.dbgp)\0*.dbgp\0All Files\0*.*\0", m_hWnd);
+	WTLHelper::SuspendHook();
+	auto ok = IDOK == dlg.DoModal();
+	WTLHelper::ResumeHook();
+	if (!ok)
+		return 0;
+
+	//
+	// a file log is not real-time: it does not capture and its tab can be closed
+	//
+	auto view = new CDebugView(this, false);
+	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+	view->SetFont(m_Font);
+	if (!view->Load(dlg.m_szFileName)) {
+		view->DestroyWindow();	// deletes the view
+		AtlMessageBox(m_hWnd, L"Error opening log file.", IDS_TITLE, MB_ICONERROR);
+		return 0;
+	}
+	m_Tabs.AddPage(view->m_hWnd, dlg.m_szFileTitle, 1, view);
 	return 0;
 }
 

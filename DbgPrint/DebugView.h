@@ -20,6 +20,9 @@ public:
 
 	CDebugView(IMainFrame* frame, bool realTime = true);
 
+	// loads a native (.dbgp) log into a non-real-time view
+	bool Load(PCWSTR path);
+
 	CString GetColumnText(HWND, int row, int col) const;
 	PCWSTR GetExistingColumnText(HWND, int row, int col) const;
 	bool IsSortable(HWND, int col) const;
