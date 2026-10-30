@@ -81,9 +81,10 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 	cm->UpdateColumns();
 	cm->DeleteColumn(0);
 
-	m_Highlights = AppSettings::Get().HighlightItems();
-	if (m_Highlights.empty())
-		m_Highlights = DefaultHighlightColors;
+	if (!s_HighlightsLoaded) {
+		s_Highlights = AppSettings::ParseHighlights(AppSettings::Get().HighlightRules());
+		s_HighlightsLoaded = true;
+	}
 
 	m_TempItems.reserve(256);
 	m_Items.reserve(4096);
@@ -95,13 +96,25 @@ LRESULT CDebugView::OnCreate(UINT, WPARAM, LPARAM, BOOL&) {
 
 LRESULT CDebugView::OnTimer(UINT, WPARAM id, LPARAM, BOOL&) {
 	if (id == 1) {
+		std::vector<std::shared_ptr<DebugItem>> items;
 		{
 			std::lock_guard locker(m_Lock);
 			if (m_TempItems.empty())
 				return 0;
+			items.swap(m_TempItems);
+		}
 
-			m_Items.append(m_TempItems.begin(), m_TempItems.end());
-			m_TempItems.clear();
+		//
+		// icons are extracted here rather than on the capture threads, which writers of debug output wait for
+		//
+		for (auto& item : items) {
+			auto pi = item->Process.ProcessId <= 4 ? nullptr : m_pm.GetProcessInfo(item->Process);
+			item->Image = pi ? m_IconCache.GetIcon(pi->FullPath) : 0;
+		}
+
+		{
+			std::lock_guard locker(m_Lock);
+			m_Items.append(items.begin(), items.end());
 		}
 		UpdateList();
 	}
@@ -177,16 +190,36 @@ DWORD CDebugView::OnPrePaint(DWORD, LPNMCUSTOMDRAW cd) {
 }
 
 DWORD CDebugView::OnItemPrePaint(DWORD, LPNMCUSTOMDRAW cd) {
-	auto lvcd = (NMLVCUSTOMDRAW*)cd;
-	auto& item = m_Items[(int)cd->dwItemSpec];
-	if ((item->Flags & DebugOutputFlags::Highlight) == DebugOutputFlags::Highlight) {
+	auto row = (int)cd->dwItemSpec;
+	if (cd->hdr.hwndFrom != m_List || row >= (int)m_Items.size())
+		return CDRF_DODEFAULT;
 
-	}
-	return CDRF_SKIPPOSTPAINT;
+	//
+	// the selection keeps its own colors, so it stays visible
+	//
+	if (m_List.GetItemState(row, LVIS_SELECTED) == LVIS_SELECTED)
+		return CDRF_DODEFAULT;
+
+	auto rule = FindHighlight(*m_Items[row]);
+	if (!rule)
+		return CDRF_DODEFAULT;
+
+	auto lvcd = (NMLVCUSTOMDRAW*)cd;
+	lvcd->clrTextBk = WTLHelper::IsDarkMode() ? rule->Dark : rule->Light;
+	//
+	// black or white text, whichever reads better on the background
+	//
+	auto bk = lvcd->clrTextBk;
+	auto luminance = (GetRValue(bk) * 299 + GetGValue(bk) * 587 + GetBValue(bk) * 114) / 1000;
+	lvcd->clrText = luminance > 128 ? RGB(0, 0, 0) : RGB(255, 255, 255);
+	return CDRF_NEWFONT;
 }
 
-bool CDebugView::CanClose() {
-	return !m_RealTime;
+HighlightItem const* CDebugView::FindHighlight(DebugItem const& item) {
+	for (auto& rule : s_Highlights)
+		if (!rule.Text.empty() && ::StrStrIW(item.Text.c_str(), rule.Text.c_str()))
+			return &rule;
+	return nullptr;
 }
 
 void CDebugView::OnFinalMessage(HWND) {
@@ -216,8 +249,9 @@ void CDebugView::DebugOutput(DWORD pid, PCSTR text, FILETIME const& time, DebugO
 	item->Flags = flags;
 	item->Stack = std::move(stack);
 	item->Index = InterlockedIncrement(&s_Index);
-	auto pi = pid <= 4 ? nullptr : m_pm.GetProcessInfo(item->Process);
-	item->Image = pi ? m_IconCache.GetIcon(pi->FullPath) : 0;
+	//
+	// the process is looked up now, while it's still running; its icon is extracted later, on the UI thread (OnTimer)
+	//
 	std::lock_guard locker(m_Lock);
 	m_TempItems.push_back(std::move(item));
 }
@@ -564,8 +598,14 @@ LRESULT CDebugView::OnSave(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 }
 
 LRESULT CDebugView::OnHighlight(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CHighlightDlg dlg(m_Highlights);
+	CHighlightDlg dlg(s_Highlights);
 	if (IDOK == dlg.DoModal()) {
+		//
+		// the rules are shared by all views; the others repaint when their tab is shown
+		//
+		s_Highlights = dlg.GetItems();
+		AppSettings::Get().HighlightRules(AppSettings::FormatHighlights(s_Highlights));
+		m_List.Invalidate();
 	}
 	return 0;
 }

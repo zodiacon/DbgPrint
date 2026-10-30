@@ -76,6 +76,7 @@ private:
 	CDebugView* CreateDebugOutputView(PCWSTR name);
 	CDebugView* GetActiveView() const;
 	void ReportKernelCaptureError();
+	bool CanCloseView(CDebugView const* view) const;
 	void InitFilterBand();
 
 // Handler prototypes (uncomment arguments if needed):

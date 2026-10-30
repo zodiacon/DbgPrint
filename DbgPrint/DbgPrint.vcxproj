@@ -345,7 +345,7 @@
       <AdditionalManifestFiles>manifest.xml</AdditionalManifestFiles>
     </Manifest>
     <PostBuildEvent>
-      <Command>signtool sign /sha1 72747c7bcc50d4d109b76f70db640909746144b5 /fd sha256 $(TargetPath)</Command>
+      <Command>signtool sign /n scorpio /fd sha256 $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -422,7 +422,7 @@
       <AdditionalManifestFiles>manifest.xml</AdditionalManifestFiles>
     </Manifest>
     <PostBuildEvent>
-      <Command>signtool sign /sha1 72747c7bcc50d4d109b76f70db640909746144b5 /fd sha256 $(TargetPath)</Command>
+      <Command>signtool sign /n scorpio /fd sha256 $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -501,7 +501,7 @@
       <AdditionalManifestFiles>manifest.xml</AdditionalManifestFiles>
     </Manifest>
     <PostBuildEvent>
-      <Command>signtool sign /sha1 72747c7bcc50d4d109b76f70db640909746144b5 /fd sha256 $(TargetPath)</Command>
+      <Command>signtool sign /n scorpio /fd sha256 $(TargetPath)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

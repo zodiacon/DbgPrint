@@ -46,3 +46,44 @@ std::wstring AppSettings::BuildSymbolSearchPath(bool useServer, std::wstring con
 	}
 	return path;
 }
+
+std::wstring AppSettings::FormatHighlights(std::vector<HighlightItem> const& items) {
+	std::wstring text;
+	WCHAR colors[32];
+	for (auto& item : items) {
+		swprintf_s(colors, L"%06X|%06X|", item.Light, item.Dark);
+		text += colors;
+		text += item.Text;
+		text += L"\n";
+	}
+	return text;
+}
+
+std::vector<HighlightItem> AppSettings::ParseHighlights(std::wstring const& text) {
+	std::vector<HighlightItem> items;
+	size_t start = 0;
+	while (start < text.size()) {
+		auto end = text.find(L'\n', start);
+		if (end == std::wstring::npos)
+			end = text.size();
+		auto line = text.substr(start, end - start);
+		start = end + 1;
+		if (!line.empty() && line.back() == L'\r')	// a file saved with CRLF line breaks
+			line.pop_back();
+
+		//
+		// the text is everything after the second '|', so it may contain '|' itself
+		//
+		auto bar1 = line.find(L'|');
+		auto bar2 = bar1 == std::wstring::npos ? std::wstring::npos : line.find(L'|', bar1 + 1);
+		if (bar2 == std::wstring::npos)
+			continue;
+		HighlightItem item;
+		item.Light = (COLORREF)wcstoul(line.substr(0, bar1).c_str(), nullptr, 16);
+		item.Dark = (COLORREF)wcstoul(line.substr(bar1 + 1, bar2 - bar1 - 1).c_str(), nullptr, 16);
+		item.Text = line.substr(bar2 + 1);
+		if (!item.Text.empty())
+			items.push_back(std::move(item));
+	}
+	return items;
+}

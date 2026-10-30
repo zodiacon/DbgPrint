@@ -30,8 +30,9 @@ public:
 	BOOL OnRightClickList(HWND, int row, int col, POINT const&);
 	DWORD OnPrePaint(DWORD, LPNMCUSTOMDRAW cd);
 	DWORD OnItemPrePaint(DWORD, LPNMCUSTOMDRAW cd);
+	// the first rule whose text the message contains, or null
+	static HighlightItem const* FindHighlight(DebugItem const& item);
 
-	bool CanClose();
 	void OnFinalMessage(HWND) override;
 	bool IsRealTime() const;
 	bool IsEmpty() const;
@@ -107,7 +108,8 @@ private:
 	LRESULT OnFindNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	CListViewCtrl m_List;
-	SortedFilteredVector<std::shared_ptr<DebugItem>> m_Items, m_TempItems;
+	SortedFilteredVector<std::shared_ptr<DebugItem>> m_Items;
+	std::vector<std::shared_ptr<DebugItem>> m_TempItems;	// from the capture threads, taken in by OnTimer
 	std::mutex m_Lock;
 	inline static ULONG s_Index;
 	CUpdateUIBase* m_ui{ nullptr };
@@ -115,7 +117,9 @@ private:
 	std::atomic<bool> m_Running{ false };
 	ImageIconCache m_IconCache;
 	ProcessManager m_pm;
-	std::vector<HighlightItem> m_Highlights;
+	// highlight rules, shared by all views (UI thread only)
+	inline static std::vector<HighlightItem> s_Highlights;
+	inline static bool s_HighlightsLoaded{ false };
 	CString m_FilterText;
 	bool m_RealTime;
 

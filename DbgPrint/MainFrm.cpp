@@ -309,7 +309,7 @@ void CMainFrame::UpdateUI() {
 	// the capture commands apply to the view that captures (m_pActiveView), so only enable them on its tab
 	//
 	auto capturing = view && view == m_pActiveView && view->IsRealTime();
-	UIEnable(ID_WINDOWS_CLOSE, view && view->CanClose());
+	UIEnable(ID_WINDOWS_CLOSE, view && CanCloseView(view));
 	UIEnable(ID_WINDOWS_CLOSEALL, m_Tabs.GetPageCount() > 1);
 	UIEnable(ID_CAPTURE_CAPTUREOUTPUT, capturing);
 	UIEnable(ID_CAPTURE_CAPTUREUSERMODE, capturing);
@@ -354,18 +354,18 @@ LRESULT CMainFrame::OnTabClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		return 0;
 
 	auto view = (CDebugView*)m_Tabs.GetPageData(page);
-	if (view->CanClose())
+	if (CanCloseView(view))
 		m_Tabs.RemovePage(page);
 	return 0;
 }
 
 LRESULT CMainFrame::OnTabCloseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	//
-	// real-time views cannot be closed, so remove only the pages that allow it
+	// the capturing view cannot be closed, so remove only the pages that allow it
 	//
 	for (int page = m_Tabs.GetPageCount() - 1; page >= 0; page--) {
 		auto view = (CDebugView*)m_Tabs.GetPageData(page);
-		if (view->CanClose())
+		if (CanCloseView(view))
 			m_Tabs.RemovePage(page);
 	}
 	return 0;
@@ -439,6 +439,13 @@ CDebugView* CMainFrame::CreateDebugOutputView(PCWSTR name) {
 		ReportKernelCaptureError();
 	m_Tabs.AddPage(view->m_hWnd, name, 0, view);
 	return view;
+}
+
+bool CMainFrame::CanCloseView(CDebugView const* view) const {
+	//
+	// the capturing view stays; earlier real-time logs (stopped) and file logs can be closed
+	//
+	return view != m_pActiveView;
 }
 
 void CMainFrame::ReportKernelCaptureError() {

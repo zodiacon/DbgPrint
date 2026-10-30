@@ -3,12 +3,6 @@
 #include <Settings.h>
 #include "Interfaces.h"
 
-static std::vector<HighlightItem> DefaultHighlightColors {
-	{ RGB(0, 255, 0), RGB(0, 128, 0) },
-	{ RGB(0, 0, 255), RGB(0, 0, 128) },
-	{ RGB(255, 128, 0), RGB(128, 0, 0) },
-};
-
 struct AppSettings : Settings {
 	BEGIN_SETTINGS(AppSettings)
 		SETTING(MainWindowPlacement, WINDOWPLACEMENT{}, SettingType::Binary);
@@ -33,7 +27,7 @@ struct AppSettings : Settings {
 		SETTING(SymbolUseEnvPath, 1, SettingType::Bool);
 		SETTING(AutoScroll, 0, SettingType::Bool);
 		SETTING(BookmarkColor, RGB(0, 255, 0), SettingType::Int32);
-		SETTING(HightlightItems, DefaultHighlightColors, SettingType::Binary);
+		SETTING_STRING(HighlightRules, L"");	// see FormatHighlights
 	END_SETTINGS
 
 	DEF_SETTING(AlwaysOnTop, int)
@@ -48,7 +42,7 @@ struct AppSettings : Settings {
 	DEF_SETTING(CaptureKernel, int)
 	DEF_SETTING(CaptureStacks, int)
 	DEF_SETTING(AutoScroll, int)
-	DEF_SETTING(HighlightItems, std::vector<HighlightItem>)
+	DEF_SETTING_STRING(HighlightRules)
 	DEF_SETTING(ConfirmErase, bool);
 	DEF_SETTING(SymbolServerEnabled, bool)
 	DEF_SETTING_STRING(SymbolServerUrl)
@@ -63,5 +57,10 @@ struct AppSettings : Settings {
 	std::wstring BuildSymbolSearchPath() const;
 	static std::wstring BuildSymbolSearchPath(bool useServer, std::wstring const& url, std::wstring const& cache,
 		std::wstring const& extra, bool useEnv);
+
+	// highlight rules as text, one per line: "light|dark|text" with the colors as COLORREF hex
+	// (the same format is used by the highlight dialog's Save and Load)
+	static std::wstring FormatHighlights(std::vector<HighlightItem> const& items);
+	static std::vector<HighlightItem> ParseHighlights(std::wstring const& text);
 };
 
