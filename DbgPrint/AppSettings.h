@@ -25,6 +25,12 @@ struct AppSettings : Settings {
 		SETTING(CaptureSession0, 0, SettingType::Bool);
 		SETTING(CaptureKernel, 0, SettingType::Bool);
 		SETTING(CaptureStacks, 0, SettingType::Bool);
+		SETTING(SymbolServerEnabled, 1, SettingType::Bool);
+		// SETTING_STRING copies the text; SETTING with a PCWSTR would store the pointer's bytes
+		SETTING_STRING(SymbolServerUrl, DefaultSymbolServerUrl);
+		SETTING_STRING(SymbolCache, DefaultSymbolCache);
+		SETTING_STRING(SymbolExtraPaths, L"");
+		SETTING(SymbolUseEnvPath, 1, SettingType::Bool);
 		SETTING(AutoScroll, 0, SettingType::Bool);
 		SETTING(BookmarkColor, RGB(0, 255, 0), SettingType::Int32);
 		SETTING(HightlightItems, DefaultHighlightColors, SettingType::Binary);
@@ -44,5 +50,18 @@ struct AppSettings : Settings {
 	DEF_SETTING(AutoScroll, int)
 	DEF_SETTING(HighlightItems, std::vector<HighlightItem>)
 	DEF_SETTING(ConfirmErase, bool);
+	DEF_SETTING(SymbolServerEnabled, bool)
+	DEF_SETTING_STRING(SymbolServerUrl)
+	DEF_SETTING_STRING(SymbolCache)
+	DEF_SETTING_STRING(SymbolExtraPaths)
+	DEF_SETTING(SymbolUseEnvPath, bool)
+
+	static constexpr PCWSTR DefaultSymbolServerUrl = L"https://msdl.microsoft.com/download/symbols";
+	static constexpr PCWSTR DefaultSymbolCache = L"%LOCALAPPDATA%\\DbgPrint\\Symbols";
+
+	// the search path handed to DbgHelp ("extra paths;_NT_SYMBOL_PATH;srv*cache*url"); empty: none
+	std::wstring BuildSymbolSearchPath() const;
+	static std::wstring BuildSymbolSearchPath(bool useServer, std::wstring const& url, std::wstring const& cache,
+		std::wstring const& extra, bool useEnv);
 };
 

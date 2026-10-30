@@ -10,6 +10,7 @@
 #include "SecurityHelper.h"
 #include "AppSettings.h"
 #include "Helpers.h"
+#include "SymbolSettingsDlg.h"
 #include <WTLHelper.h>
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg) {
@@ -383,6 +384,15 @@ LRESULT CMainFrame::OnConfirmErase(WORD /*wNotifyCode*/, WORD id, HWND /*hWndCtl
 	auto confirm = !AppSettings::Get().ConfirmErase();
 	AppSettings::Get().ConfirmErase(confirm);
 	UISetCheck(id, confirm);
+	return 0;
+}
+
+LRESULT CMainFrame::OnSymbols(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	//
+	// each call stack shown resolves its symbols with the current settings, so nothing else needs resetting
+	//
+	CSymbolSettingsDlg dlg;
+	dlg.DoModal();
 	return 0;
 }
 

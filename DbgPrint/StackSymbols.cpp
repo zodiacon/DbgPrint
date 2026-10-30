@@ -3,7 +3,6 @@
 #include <winternl.h>
 #include <Psapi.h>
 #include <DbgHelp.h>
-#include <ShlObj.h>
 #include <mutex>
 #include <unordered_set>
 #include <wil\resource.h>
@@ -107,32 +106,6 @@ namespace {
 	};
 }
 
-CString const& StackSymbols::SymbolPath() {
-	static const CString path = [] {
-		CString path;
-		if (auto size = ::GetEnvironmentVariable(L"_NT_SYMBOL_PATH", nullptr, 0); size > 1) {
-			::GetEnvironmentVariable(L"_NT_SYMBOL_PATH", path.GetBufferSetLength(size), size);
-			path.ReleaseBuffer();
-			return path;
-		}
-
-		CString cache;
-		PWSTR appData;
-		if (SUCCEEDED(::SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &appData))) {
-			cache = appData;
-			::CoTaskMemFree(appData);
-		}
-		else {
-			::GetTempPath(MAX_PATH, cache.GetBufferSetLength(MAX_PATH));
-			cache.ReleaseBuffer();
-		}
-		cache.TrimRight(L'\\');
-		path.Format(L"srv*%s\\DbgPrint\\Symbols*https://msdl.microsoft.com/download/symbols", (PCWSTR)cache);
-		return path;
-	}();
-	return path;
-}
-
 std::vector<StackSymbols::Module> const& StackSymbols::KernelModules() {
 	if (m_KernelLoaded)
 		return m_Kernel;
@@ -222,7 +195,7 @@ std::vector<CString> StackSymbols::ModuleOffsets(std::vector<ULONG64> const& sta
 	return offsets;
 }
 
-std::vector<CString> StackSymbols::FunctionNames(std::vector<ULONG64> const& stack, ProcessKey const& process) {
+std::vector<CString> StackSymbols::FunctionNames(std::vector<ULONG64> const& stack, ProcessKey const& process, std::wstring const& symbolPath) {
 	std::vector<CString> names(stack.size());
 	auto api = DbgHelp::Get();
 	if (!api)
@@ -234,7 +207,10 @@ std::vector<CString> StackSymbols::FunctionNames(std::vector<ULONG64> const& sta
 	// the handle only identifies the DbgHelp session; no process memory is read, the modules are loaded from their files
 	//
 	auto session = reinterpret_cast<HANDLE>(this);
-	if (!api->SymInitializeW(session, SymbolPath(), FALSE))
+	//
+	// never null: DbgHelp would then make up a path of its own, with _NT_SYMBOL_PATH in it
+	//
+	if (!api->SymInitializeW(session, symbolPath.c_str(), FALSE))
 		return names;
 
 	std::unordered_set<ULONG64> loaded;

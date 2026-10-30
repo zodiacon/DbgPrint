@@ -32,6 +32,7 @@
 #define IDI_BOOKMARK_NEXT               227
 #define IDI_BOOKMARK_PREV               228
 #define IDD_HIGHLIGHT                   229
+#define IDD_SYMBOLS                     232
 #define IDI_ICON1                       231
 #define IDI_FIND_NEXT                   231
 #define IDC_PID                         1000
@@ -53,6 +54,14 @@
 #define IDC_ADD                         1018
 #define IDC_DELETE                      1019
 #define IDC_STACK                       1020
+#define IDC_SYM_USE_SERVER              1021
+#define IDC_SYM_SERVER_URL              1022
+#define IDC_SYM_CACHE                   1023
+#define IDC_SYM_BROWSE                  1024
+#define IDC_SYM_EXTRA                   1025
+#define IDC_SYM_USE_ENV                 1026
+#define IDC_SYM_PREVIEW                 1027
+#define IDC_SYM_DEFAULTS                1028
 #define ID_FILE_RUNASADMINISTRATOR      32775
 #define ID_OPTIONS_ALWAYSONTOP          32776
 #define ID_OPTIONS_FONTS                32777
@@ -90,14 +99,15 @@
 #define ID_SEARCH_FINDNEXT              32816
 #define ID_VIEW_HIGHLIGHT               32819
 #define ID_CAPTURE_CAPTURESTACKS        32820
+#define ID_OPTIONS_SYMBOLS              32821
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        232
-#define _APS_NEXT_COMMAND_VALUE         32821
-#define _APS_NEXT_CONTROL_VALUE         1021
+#define _APS_NEXT_RESOURCE_VALUE        233
+#define _APS_NEXT_COMMAND_VALUE         32822
+#define _APS_NEXT_CONTROL_VALUE         1029
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

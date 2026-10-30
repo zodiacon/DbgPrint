@@ -70,8 +70,8 @@ void CPropertiesDlg::InitStack() {
     // module+offset is shown meanwhile; loading symbols may download them
     //
     SetSymbolHeader(L"Symbol (loading symbols...)");
-    std::thread([hDlg = m_hWnd, stack = m_Item.Stack, process = m_Item.Process] {
-        auto names = std::make_unique<std::vector<CString>>(StackSymbols().FunctionNames(stack, process));
+    std::thread([hDlg = m_hWnd, stack = m_Item.Stack, process = m_Item.Process, path = AppSettings::Get().BuildSymbolSearchPath()] {
+        auto names = std::make_unique<std::vector<CString>>(StackSymbols().FunctionNames(stack, process, path));
         //
         // fails if the dialog was closed meanwhile, and the names are freed here
         //
