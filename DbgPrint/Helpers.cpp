@@ -3,8 +3,6 @@
 #include "resource.h"
 #include <winternl.h>
 #include <dpfilter.h>
-#include <Psapi.h>
-#include <wil\resource.h>
 
 #pragma comment(lib, "ntdll")
 
@@ -199,105 +197,4 @@ bool Helpers::EnableAllkernelOutput(bool enable) {
 int Helpers::GetKernelComponentNames(PCWSTR*& names) {
 	names = components;
 	return _countof(components);
-}
-
-namespace {
-	struct ModuleRange {
-		ULONG64 Base;
-		ULONG64 End;
-		CString Name;
-	};
-
-	typedef struct _RTL_PROCESS_MODULE_INFORMATION {
-		HANDLE Section;
-		PVOID MappedBase;
-		PVOID ImageBase;
-		ULONG ImageSize;
-		ULONG Flags;
-		USHORT LoadOrderIndex;
-		USHORT InitOrderIndex;
-		USHORT LoadCount;
-		USHORT OffsetToFileName;
-		UCHAR FullPathName[256];
-	} RTL_PROCESS_MODULE_INFORMATION;
-
-	typedef struct _RTL_PROCESS_MODULES {
-		ULONG NumberOfModules;
-		RTL_PROCESS_MODULE_INFORMATION Modules[1];
-	} RTL_PROCESS_MODULES;
-
-	const auto SystemModuleInformation = (SYSTEM_INFORMATION_CLASS)11;
-	const NTSTATUS STATUS_INFO_LENGTH_MISMATCH = 0xC0000004;
-
-	void AddKernelModules(std::vector<ModuleRange>& modules) {
-		ULONG size = 1 << 16;
-		std::unique_ptr<BYTE[]> buffer;
-		NTSTATUS status;
-		do {
-			buffer = std::make_unique<BYTE[]>(size);
-			status = ::NtQuerySystemInformation(SystemModuleInformation, buffer.get(), size, &size);
-		} while (status == STATUS_INFO_LENGTH_MISMATCH);
-		if (!NT_SUCCESS(status))
-			return;
-
-		auto info = (RTL_PROCESS_MODULES*)buffer.get();
-		for (ULONG i = 0; i < info->NumberOfModules; i++) {
-			auto& m = info->Modules[i];
-			auto base = (ULONG64)m.ImageBase;
-			if (base == 0)		// addresses are hidden without SeDebugPrivilege
-				continue;
-			modules.push_back({ base, base + m.ImageSize, CString((PCSTR)m.FullPathName + m.OffsetToFileName) });
-		}
-	}
-
-	void AddProcessModules(std::vector<ModuleRange>& modules, ProcessKey const& process) {
-		wil::unique_handle hProcess(::OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process.ProcessId));
-		if (!hProcess)
-			return;
-
-		//
-		// make sure this is the same process and not a new one that reused the PID
-		//
-		FILETIME start, dummy;
-		if (!::GetProcessTimes(hProcess.get(), &start, &dummy, &dummy, &dummy) ||
-			::CompareFileTime(&start, &process.StartTime) != 0)
-			return;
-
-		HMODULE handles[1024];
-		DWORD needed;
-		if (!::EnumProcessModulesEx(hProcess.get(), handles, sizeof(handles), &needed, LIST_MODULES_ALL))
-			return;
-
-		auto count = std::min<size_t>(needed / sizeof(HMODULE), _countof(handles));
-		for (DWORD i = 0; i < count; i++) {
-			MODULEINFO mi;
-			WCHAR name[MAX_PATH];
-			if (::GetModuleInformation(hProcess.get(), handles[i], &mi, sizeof(mi)) &&
-				::GetModuleBaseName(hProcess.get(), handles[i], name, _countof(name))) {
-				auto base = (ULONG64)mi.lpBaseOfDll;
-				modules.push_back({ base, base + mi.SizeOfImage, name });
-			}
-		}
-	}
-}
-
-std::vector<CString> Helpers::ResolveStack(std::vector<ULONG64> const& stack, ProcessKey const& process) {
-	std::vector<ModuleRange> modules;
-	modules.reserve(512);
-	AddKernelModules(modules);
-	if (process.ProcessId > 4)
-		AddProcessModules(modules, process);
-
-	std::vector<CString> symbols;
-	symbols.reserve(stack.size());
-	for (auto address : stack) {
-		auto it = std::find_if(modules.begin(), modules.end(), [=](auto const& m) {
-			return address >= m.Base && address < m.End;
-			});
-		CString symbol;
-		if (it != modules.end())
-			symbol.Format(L"%s+0x%llX", (PCWSTR)it->Name, address - it->Base);
-		symbols.push_back(std::move(symbol));
-	}
-	return symbols;
 }

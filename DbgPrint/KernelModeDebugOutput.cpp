@@ -4,8 +4,10 @@
 #pragma comment(lib, "tdh")
 
 namespace {
-	// private system logger session name (Windows 8+)
-	const WCHAR SessionName[] = L"DbgPrintKernelSession";
+	// private system logger sessions (Windows 8+) are named by prefix + process ID, one per instance
+	const WCHAR SessionPrefix[] = L"DbgPrintKernelSession-";
+	// the single session name used by earlier versions
+	const WCHAR OldSessionName[] = L"DbgPrintKernelSession";
 
 	// kernel event classes (see wmicore.mof)
 	// {13976D09-A327-438C-950B-7F03192815C7}
@@ -20,17 +22,70 @@ namespace {
 
 	// how long a message waits for its stack walk event before being reported without a stack
 	const ULONGLONG PendingTimeout = 1000;
+	// how often waiting messages are checked, even when no events arrive
+	const DWORD FlushInterval = 500;
 
 	// how long Stop waits for the processing thread to drain the remaining events
 	const DWORD StopTimeout = 5000;
+
+	bool IsProcessRunning(DWORD pid) {
+		wil::unique_handle hProcess(::OpenProcess(SYNCHRONIZE, FALSE, pid));
+		if (!hProcess)
+			return ::GetLastError() == ERROR_ACCESS_DENIED;	// exists, but cannot be opened
+		return ::WaitForSingleObject(hProcess.get(), 0) == WAIT_TIMEOUT;
+	}
+
+	//
+	// stop the sessions of instances that are gone (crashed or killed): a real-time session outlives
+	// its process, and there are only a few system logger slots
+	//
+	void StopStaleSessions() {
+		const ULONG MaxSessions = 64;
+		const ULONG NameChars = 1024;
+		const ULONG PropertiesSize = sizeof(EVENT_TRACE_PROPERTIES) + 2 * NameChars * sizeof(WCHAR);
+
+		auto buffer = std::make_unique<BYTE[]>(MaxSessions * PropertiesSize);
+		EVENT_TRACE_PROPERTIES* sessions[MaxSessions];
+		for (ULONG i = 0; i < MaxSessions; i++) {
+			auto p = reinterpret_cast<EVENT_TRACE_PROPERTIES*>(buffer.get() + i * PropertiesSize);
+			p->Wnode.BufferSize = PropertiesSize;
+			p->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+			p->LogFileNameOffset = sizeof(EVENT_TRACE_PROPERTIES) + NameChars * sizeof(WCHAR);
+			sessions[i] = p;
+		}
+
+		ULONG count = 0;
+		auto error = ::QueryAllTraces(sessions, MaxSessions, &count);
+		if (error != ERROR_SUCCESS && error != ERROR_MORE_DATA)
+			return;
+
+		for (ULONG i = 0; i < count; i++) {
+			auto p = sessions[i];
+			auto name = (PCWSTR)((BYTE*)p + p->LoggerNameOffset);
+			bool stale;
+			if (::_wcsicmp(name, OldSessionName) == 0)
+				stale = true;
+			else if (::_wcsnicmp(name, SessionPrefix, _countof(SessionPrefix) - 1) == 0) {
+				auto pid = (DWORD)::wcstoul(name + _countof(SessionPrefix) - 1, nullptr, 10);
+				stale = pid != ::GetCurrentProcessId() && !IsProcessRunning(pid);
+			}
+			else
+				stale = false;
+
+			if (stale)
+				::ControlTrace(0, name, p, EVENT_TRACE_CONTROL_STOP);
+		}
+	}
 }
 
 KernelModeDebugOutput::~KernelModeDebugOutput() {
 	//
 	// the processing thread uses this object, so it must be gone before the memory is freed
 	//
-	if (!Stop() && m_hThread)
+	if (!Stop() && m_hThread) {
 		::WaitForSingleObject(m_hThread.get(), INFINITE);
+		Stop();
+	}
 }
 
 void KernelModeDebugOutput::SetCaptureStacks(bool capture) {
@@ -50,6 +105,7 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 		if (::WaitForSingleObject(m_hThread.get(), 0) == WAIT_TIMEOUT)
 			return false;
 		m_hThread.reset();
+		StopFlushTimer();
 		FlushPending(true);
 	}
 
@@ -60,13 +116,19 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 	// rather than taking over the global "NT Kernel Logger" other tools may be using
 	//
 	bool isWin8Plus = ::IsWindows8OrGreater();
-	m_SessionName = isWin8Plus ? SessionName : KERNEL_LOGGER_NAME;
+	if (isWin8Plus) {
+		StopStaleSessions();
+		m_SessionName = SessionPrefix + std::to_wstring(::GetCurrentProcessId());
+	}
+	else {
+		m_SessionName = KERNEL_LOGGER_NAME;
+	}
 
 	// {6990501B-4484-4EF0-8793-84159B8D4728}
 	static const GUID dummyGuid =
 	{ 0x6990501b, 0x4484, 0x4ef0, { 0x87, 0x93, 0x84, 0x15, 0x9b, 0x8d, 0x47, 0x28 } };
 
-	auto size = sizeof(EVENT_TRACE_PROPERTIES) + (wcslen(m_SessionName) + 1) * sizeof(WCHAR);
+	auto size = sizeof(EVENT_TRACE_PROPERTIES) + (m_SessionName.length() + 1) * sizeof(WCHAR);
 	m_propertiesBuffer = std::make_unique<BYTE[]>(size);
 	ULONG error;
 
@@ -83,12 +145,12 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 		m_properties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE | EVENT_TRACE_USE_LOCAL_SEQUENCE | EVENT_TRACE_SYSTEM_LOGGER_MODE;
 		m_properties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 
-		error = ::StartTrace(&m_handle, m_SessionName, m_properties);
+		error = ::StartTrace(&m_handle, m_SessionName.c_str(), m_properties);
 		if (error == ERROR_ALREADY_EXISTS) {
 			//
-			// most likely a session left behind by a previous instance
+			// this instance's own session, left running by an earlier capture
 			//
-			error = ::ControlTrace(0, m_SessionName, m_properties, EVENT_TRACE_CONTROL_STOP);
+			error = ::ControlTrace(0, m_SessionName.c_str(), m_properties, EVENT_TRACE_CONTROL_STOP);
 			if (error != ERROR_SUCCESS)
 				return false;
 			continue;
@@ -104,10 +166,11 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 		//
 		CLASSIC_EVENT_ID id{ DebugPrintGuid, DebugPrintOpcode };
 		::TraceSetInformation(m_handle, TraceStackTracingInfo, &id, sizeof(id));
+		StartFlushTimer();
 	}
 
 	m_traceLog.Context = this;
-	m_traceLog.LoggerName = const_cast<PWSTR>(m_SessionName);
+	m_traceLog.LoggerName = m_SessionName.data();
 	m_traceLog.ProcessTraceMode = PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_REAL_TIME;
 	m_traceLog.EventRecordCallback = [](PEVENT_RECORD record) {
 		((KernelModeDebugOutput*)record->UserContext)->OnEvent(record);
@@ -137,7 +200,7 @@ bool KernelModeDebugOutput::Run(IDebugOutput* sink) {
 
 bool KernelModeDebugOutput::Stop() {
 	if (m_handle) {
-		::ControlTrace(m_handle, m_SessionName, m_properties, EVENT_TRACE_CONTROL_STOP);
+		::ControlTrace(m_handle, m_SessionName.c_str(), m_properties, EVENT_TRACE_CONTROL_STOP);
 		m_handle = 0;
 	}
 	if (m_hTrace) {
@@ -159,8 +222,9 @@ bool KernelModeDebugOutput::Stop() {
 	}
 
 	//
-	// the processing thread is gone, so the pending messages can be flushed safely
+	// no more events are coming, so the waiting messages can be reported
 	//
+	StopFlushTimer();
 	FlushPending(true);
 	return true;
 }
@@ -209,12 +273,13 @@ void KernelModeDebugOutput::OnDebugPrint(PEVENT_RECORD record) {
 	//
 	// hold the message until its stack walk event (logged right after it on the same thread) arrives
 	//
+	std::lock_guard locker(m_PendingLock);
 	if (auto it = m_Pending.find(header.ThreadId); it != m_Pending.end()) {
 		Report(it->second);
 		m_Pending.erase(it);
 	}
 	m_Pending.insert({ header.ThreadId, std::move(output) });
-	FlushPending(false);
+	FlushPendingLocked(false);
 }
 
 void KernelModeDebugOutput::OnStackWalk(PEVENT_RECORD record) {
@@ -227,6 +292,8 @@ void KernelModeDebugOutput::OnStackWalk(PEVENT_RECORD record) {
 
 	auto data = (BYTE*)record->UserData;
 	auto tid = *(ULONG*)(data + sizeof(ULONG64) + sizeof(ULONG));
+
+	std::lock_guard locker(m_PendingLock);
 	auto it = m_Pending.find(tid);
 	if (it == m_Pending.end())
 		return;
@@ -245,6 +312,11 @@ void KernelModeDebugOutput::OnStackWalk(PEVENT_RECORD record) {
 }
 
 void KernelModeDebugOutput::FlushPending(bool all) {
+	std::lock_guard locker(m_PendingLock);
+	FlushPendingLocked(all);
+}
+
+void KernelModeDebugOutput::FlushPendingLocked(bool all) {
 	auto now = ::GetTickCount64();
 	for (auto it = m_Pending.begin(); it != m_Pending.end(); ) {
 		if (all || now - it->second.Received > PendingTimeout) {
@@ -254,6 +326,31 @@ void KernelModeDebugOutput::FlushPending(bool all) {
 		else {
 			++it;
 		}
+	}
+}
+
+void KernelModeDebugOutput::StartFlushTimer() {
+	//
+	// events drive flushing too, but a message whose stack never arrives must not wait for the next event
+	//
+	m_FlushTimer = ::CreateThreadpoolTimer([](PTP_CALLBACK_INSTANCE, PVOID context, PTP_TIMER) {
+		((KernelModeDebugOutput*)context)->FlushPending(false);
+		}, this, nullptr);
+	if (!m_FlushTimer)
+		return;
+
+	LARGE_INTEGER due;
+	due.QuadPart = -(LONGLONG)FlushInterval * 10000;	// relative, in 100 nsec units
+	FILETIME ft{ due.LowPart, (DWORD)due.HighPart };
+	::SetThreadpoolTimer(m_FlushTimer, &ft, FlushInterval, 0);
+}
+
+void KernelModeDebugOutput::StopFlushTimer() {
+	if (m_FlushTimer) {
+		::SetThreadpoolTimer(m_FlushTimer, nullptr, 0, 0);
+		::WaitForThreadpoolTimerCallbacks(m_FlushTimer, TRUE);
+		::CloseThreadpoolTimer(m_FlushTimer);
+		m_FlushTimer = nullptr;
 	}
 }
 

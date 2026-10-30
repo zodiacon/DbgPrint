@@ -245,7 +245,8 @@ LRESULT CMainFrame::OnCapture(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	bool capture;
 	AppSettings::Get().Capture(capture = !AppSettings::Get().Capture());
 	UISetCheck(ID_CAPTURE_CAPTUREOUTPUT, capture);
-	m_pActiveView->Capture(capture);
+	if (!m_pActiveView->Capture(capture))
+		ReportKernelCaptureError();
 	return 0;
 }
 
@@ -272,7 +273,8 @@ LRESULT CMainFrame::OnCaptureKernel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	AppSettings::Get().CaptureKernel(capture = !AppSettings::Get().CaptureKernel());
 	UISetCheck(ID_CAPTURE_CAPTUREKERNEL, capture);
 	if (AppSettings::Get().Capture())
-		m_pActiveView->CaptureKernel(capture);
+		if (!m_pActiveView->CaptureKernel(capture))
+			ReportKernelCaptureError();
 	return 0;
 }
 
@@ -280,7 +282,8 @@ LRESULT CMainFrame::OnCaptureStacks(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	bool capture;
 	AppSettings::Get().CaptureStacks(capture = !AppSettings::Get().CaptureStacks());
 	UISetCheck(ID_CAPTURE_CAPTURESTACKS, capture);
-	m_pActiveView->CaptureStacks(capture);
+	if (!m_pActiveView->CaptureStacks(capture))
+		ReportKernelCaptureError();
 	return 0;
 }
 
@@ -422,9 +425,14 @@ CDebugView* CMainFrame::CreateDebugOutputView(PCWSTR name) {
 	view->Create(m_Tabs, 0, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 	view->SetFont(m_Font);
 	m_pActiveView = view;
-	view->Capture(AppSettings::Get().Capture());
+	if (!view->Capture(AppSettings::Get().Capture()))
+		ReportKernelCaptureError();
 	m_Tabs.AddPage(view->m_hWnd, name, 0, view);
 	return view;
+}
+
+void CMainFrame::ReportKernelCaptureError() {
+	AtlMessageBox(m_hWnd, L"Kernel capture could not be started.", IDS_TITLE, MB_ICONERROR);
 }
 
 CDebugView* CMainFrame::GetActiveView() const {

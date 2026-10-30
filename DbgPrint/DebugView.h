@@ -38,11 +38,12 @@ public:
 
 	int GetRowImage(HWND, int row, int col) const;
 	void DoSort(SortInfo const*);
-	void Capture(bool capture);
-	void CaptureKernel(bool capture);
+	// these return false if kernel capture was requested but could not be started
+	bool Capture(bool capture);
+	bool CaptureKernel(bool capture);
 	void CaptureUser(bool capture);
 	void CaptureSession0(bool capture);
-	void CaptureStacks(bool capture);
+	bool CaptureStacks(bool capture);
 
 	void UpdateUI(CUpdateUIBase* ui);
 	void SetFilter(CString const& text);

@@ -74,6 +74,7 @@ private:
 	void UpdateUI();
 	CDebugView* CreateDebugOutputView(PCWSTR name);
 	CDebugView* GetActiveView() const;
+	void ReportKernelCaptureError();
 	void InitFilterBand();
 
 // Handler prototypes (uncomment arguments if needed):

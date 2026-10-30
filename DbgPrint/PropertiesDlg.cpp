@@ -5,7 +5,8 @@
 #include "ImageIconCache.h"
 #include "ProcessManager.h"
 #include "AppSettings.h"
-#include "Helpers.h"
+#include "StackSymbols.h"
+#include <thread>
 
 CPropertiesDlg::CPropertiesDlg(DebugItem const& item, ImageIconCache const& iconCache, ProcessManager const& pm) 
     : m_Item(item), m_IconCache(iconCache), m_pm(pm) {
@@ -51,7 +52,7 @@ void CPropertiesDlg::InitStack() {
     lv.InsertColumn(1, L"Address", LVCFMT_LEFT, 130);
     lv.InsertColumn(2, L"Symbol", LVCFMT_LEFT, 200);
 
-    auto symbols = Helpers::ResolveStack(m_Item.Stack, m_Item.Process);
+    auto symbols = StackSymbols().ModuleOffsets(m_Item.Stack, m_Item.Process);
     CString text;
     for (int i = 0; i < (int)m_Item.Stack.size(); i++) {
         text.Format(L"%d", i);
@@ -60,7 +61,58 @@ void CPropertiesDlg::InitStack() {
         lv.SetItemText(n, 1, text);
         lv.SetItemText(n, 2, symbols[i]);
     }
-    lv.SetColumnWidth(2, LVSCW_AUTOSIZE_USEHEADER);
+    FitStackColumn();
+
+    if (m_Item.Stack.empty())
+        return;
+
+    //
+    // module+offset is shown meanwhile; loading symbols may download them
+    //
+    SetSymbolHeader(L"Symbol (loading symbols...)");
+    std::thread([hDlg = m_hWnd, stack = m_Item.Stack, process = m_Item.Process] {
+        auto names = std::make_unique<std::vector<CString>>(StackSymbols().FunctionNames(stack, process));
+        //
+        // fails if the dialog was closed meanwhile, and the names are freed here
+        //
+        if (::PostMessage(hDlg, WM_SYMBOLS_RESOLVED, 0, reinterpret_cast<LPARAM>(names.get())))
+            names.release();
+        }).detach();
+}
+
+LRESULT CPropertiesDlg::OnSymbolsResolved(UINT, WPARAM, LPARAM lParam, BOOL&) {
+    std::unique_ptr<std::vector<CString>> names(reinterpret_cast<std::vector<CString>*>(lParam));
+    CListViewCtrl lv(GetDlgItem(IDC_STACK));
+    for (int i = 0; i < (int)names->size() && i < lv.GetItemCount(); i++) {
+        auto& name = (*names)[i];
+        if (!name.IsEmpty())
+            lv.SetItemText(i, 2, name);
+    }
+    SetSymbolHeader(L"Symbol");
+    FitStackColumn();
+    return 0;
+}
+
+LRESULT CPropertiesDlg::OnSize(UINT msg, WPARAM wParam, LPARAM lParam, BOOL& handled) {
+    //
+    // lay out the controls first, so the list has its new width
+    //
+    auto result = CDynamicDialogLayout<CPropertiesDlg>::OnSize(msg, wParam, lParam, handled);
+    FitStackColumn();
+    return result;
+}
+
+void CPropertiesDlg::FitStackColumn() {
+    CListViewCtrl lv(GetDlgItem(IDC_STACK));
+    if (lv && lv.GetHeader().GetItemCount() > 2)
+        lv.SetColumnWidth(2, LVSCW_AUTOSIZE_USEHEADER);
+}
+
+void CPropertiesDlg::SetSymbolHeader(PCWSTR text) {
+    CListViewCtrl lv(GetDlgItem(IDC_STACK));
+    LVCOLUMN column{ LVCF_TEXT };
+    column.pszText = const_cast<PWSTR>(text);
+    lv.SetColumn(2, &column);
 }
 
 LRESULT CPropertiesDlg::OnCloseCmd(WORD, WORD wID, HWND, BOOL&) {

@@ -45,6 +45,9 @@
     <ClCompile Include="SecurityHelper.cpp">
       <Filter>Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="StackSymbols.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
     <ClCompile Include="AppSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,6 +105,9 @@
       <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="SecurityHelper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="StackSymbols.h">
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="AppSettings.h">

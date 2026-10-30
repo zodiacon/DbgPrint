@@ -244,8 +244,9 @@ void CDebugView::DoSort(SortInfo const* si) {
 	m_Items.Sort(compare);
 }
 
-void CDebugView::Capture(bool capture) {
+bool CDebugView::Capture(bool capture) {
 	m_Running = capture;
+	bool ok = true;
 	if (capture) {
 		auto const& settings = AppSettings::Get();
 		if (settings.CaptureUserMode())
@@ -254,7 +255,7 @@ void CDebugView::Capture(bool capture) {
 			m_UserModeSession0.Run(this);
 		if (settings.CaptureKernel()) {
 			m_KernelMode.SetCaptureStacks(settings.CaptureStacks());
-			m_KernelMode.Run(this);
+			ok = m_KernelMode.Run(this);
 		}
 	}
 	else {
@@ -262,29 +263,30 @@ void CDebugView::Capture(bool capture) {
 		m_UserModeSession0.Stop();
 		m_KernelMode.Stop();
 	}
+	return ok;
 }
 
-void CDebugView::CaptureKernel(bool capture) {
+bool CDebugView::CaptureKernel(bool capture) {
 	if (!m_Running)
-		return;
+		return true;
 	if (capture) {
 		m_KernelMode.SetCaptureStacks(AppSettings::Get().CaptureStacks());
-		m_KernelMode.Run(this);
+		return m_KernelMode.Run(this);
 	}
-	else {
-		m_KernelMode.Stop();
-	}
+	m_KernelMode.Stop();
+	return true;
 }
 
-void CDebugView::CaptureStacks(bool capture) {
+bool CDebugView::CaptureStacks(bool capture) {
 	m_KernelMode.SetCaptureStacks(capture);
 	if (m_Running && m_KernelMode.IsRunning()) {
 		//
 		// stack tracing is configured when the session starts
 		//
 		m_KernelMode.Stop();
-		m_KernelMode.Run(this);
+		return m_KernelMode.Run(this);
 	}
+	return true;
 }
 
 void CDebugView::CaptureUser(bool capture) {

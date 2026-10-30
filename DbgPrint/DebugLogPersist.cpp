@@ -7,6 +7,7 @@
 #include <CompoundFileReaderWriter.h>
 #include "ProcessManager.h"
 #include "ImageIconCache.h"
+#include "StackSymbols.h"
 
 bool DebugLogPersist::Save(PersistFormat format, std::vector<std::shared_ptr<DebugItem>> const& items, ImageIconCache const& iconCache, ProcessManager const& pm, std::wstring_view path) {
 	return format == PersistFormat::Native ? SaveNative(items, iconCache, pm, path) : SaveCSV(items, path);
@@ -91,10 +92,31 @@ namespace {
 		}
 		line += L'"';
 	}
+
+	//
+	// the frames as module+offset (the address where it's not in a known module), separated by "; "
+	//
+	CString FormatStack(StackSymbols& symbols, DebugItem const& item) {
+		CString text;
+		if (item.Stack.empty())
+			return text;
+
+		auto offsets = symbols.ModuleOffsets(item.Stack, item.Process);
+		for (size_t i = 0; i < item.Stack.size(); i++) {
+			if (i > 0)
+				text += L"; ";
+			if (offsets[i].IsEmpty())
+				text.AppendFormat(L"0x%llX", item.Stack[i]);
+			else
+				text += offsets[i];
+		}
+		return text;
+	}
 }
 
 bool DebugLogPersist::SaveCSV(std::vector<std::shared_ptr<DebugItem>> const& items, std::wstring_view path) {
-	CString text(L"Index,Time,PID,Process Name,Source,Text,Comment\r\n");
+	CString text(L"Index,Time,PID,Process Name,Source,Text,Comment,Call Stack\r\n");
+	StackSymbols symbols;	// caches the module lists across items
 	for (auto const& item : items) {
 		CString line;
 		line.Format(L"%u,%s,%u,", item->Index, (PCWSTR)item->LocalTime(), item->Process.ProcessId);
@@ -103,6 +125,8 @@ bool DebugLogPersist::SaveCSV(std::vector<std::shared_ptr<DebugItem>> const& ite
 		AppendCsvField(line, item->Text);
 		line += L',';
 		AppendCsvField(line, item->Comment);
+		line += L',';
+		AppendCsvField(line, (PCWSTR)FormatStack(symbols, *item));
 		line += L"\r\n";
 		text += line;
 	}

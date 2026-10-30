@@ -532,6 +532,7 @@
     <ClCompile Include="ProcessManager.cpp" />
     <ClCompile Include="PropertiesDlg.cpp" />
     <ClCompile Include="SecurityHelper.cpp" />
+    <ClCompile Include="StackSymbols.cpp" />
     <ClCompile Include="UserModeDebugOutput.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -552,6 +553,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SecurityHelper.h" />
+    <ClInclude Include="StackSymbols.h" />
     <ClInclude Include="UserModeDebugOutput.h" />
   </ItemGroup>
   <ItemGroup>
