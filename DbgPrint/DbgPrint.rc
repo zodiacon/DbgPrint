@@ -114,7 +114,7 @@ BEGIN
     POPUP "&Options"
     BEGIN
         MENUITEM "&Always on Top",              ID_OPTIONS_ALWAYSONTOP
-        MENUITEM "&Fonts...",                   ID_OPTIONS_FONTS
+        MENUITEM "&Font...",                    ID_OPTIONS_FONT
         MENUITEM "&Dark Mode",                  ID_OPTIONS_DARKMODE
         MENUITEM "Confirm &Erase",              ID_OPTIONS_CONFIRMDELETE
         MENUITEM SEPARATOR

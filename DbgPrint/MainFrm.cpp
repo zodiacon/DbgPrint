@@ -396,6 +396,30 @@ LRESULT CMainFrame::OnSymbols(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	return 0;
 }
 
+LRESULT CMainFrame::OnOptionsFont(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LOGFONT lf;
+	m_Font.GetLogFont(&lf);
+	CFontDialog dlg(&lf, CF_SCREENFONTS | CF_NOVERTFONTS, nullptr, m_hWnd);
+	WTLHelper::SuspendHook();
+	auto ok = IDOK == dlg.DoModal();
+	WTLHelper::ResumeHook();
+	if (!ok)
+		return 0;
+
+	//
+	// the views switch to the new font before the old one is deleted;
+	// dialogs pick it up from the setting when they are next shown
+	//
+	CFont font;
+	if (!font.CreateFontIndirect(&dlg.m_lf))
+		return 0;
+	for (int i = 0; i < m_Tabs.GetPageCount(); i++)
+		((CDebugView*)m_Tabs.GetPageData(i))->SetFont(font);
+	m_Font.Attach(font.Detach());
+	AppSettings::Get().Font(dlg.m_lf);
+	return 0;
+}
+
 LRESULT CMainFrame::OnNewRealTimeLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (m_pActiveView) {
 		m_pActiveView->Capture(false);

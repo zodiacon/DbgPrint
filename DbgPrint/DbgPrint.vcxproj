@@ -506,6 +506,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="AppDialog.cpp" />
     <ClCompile Include="AppSettings.cpp" />
     <ClCompile Include="CommentDlg.cpp" />
     <ClCompile Include="DbgPrint.cpp" />
@@ -538,6 +539,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="AppDialog.h" />
     <ClInclude Include="AppSettings.h" />
     <ClInclude Include="CommentDlg.h" />
     <ClInclude Include="DebugLogPersist.h" />

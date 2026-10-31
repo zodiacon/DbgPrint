@@ -1,9 +1,11 @@
 #pragma once
 
+#include "AppDialog.h"
+
 #include "DialogHelper.h"
 
 struct CCommentDlg :
-	public CDialogImpl<CCommentDlg>,
+	public CAppDialogImpl<CCommentDlg>,
 	public CDynamicDialogLayout<CCommentDlg>,
 	public CDialogHelper<CCommentDlg> {
 public:

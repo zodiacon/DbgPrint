@@ -1,10 +1,12 @@
 #pragma once
 
+#include "AppDialog.h"
+
 #include "resource.h"
 #include <DialogHelper.h>
 
 class CSymbolSettingsDlg :
-	public CDialogImpl<CSymbolSettingsDlg>,
+	public CAppDialogImpl<CSymbolSettingsDlg>,
 	public CDialogHelper<CSymbolSettingsDlg> {
 public:
 	enum { IDD = IDD_SYMBOLS };

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AppDialog.h"
+
 #include "DialogHelper.h"
 #include <wil\resource.h>
 
@@ -8,7 +10,7 @@ class ImageIconCache;
 class ProcessManager;
 
 class CPropertiesDlg :
-	public CDialogImpl<CPropertiesDlg>,
+	public CAppDialogImpl<CPropertiesDlg>,
 	public CDialogHelper<CPropertiesDlg>,
 	public CDynamicDialogLayout<CPropertiesDlg> {
 public:

@@ -66,6 +66,9 @@
     <ClCompile Include="AboutDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="AppDialog.cpp">
+      <Filter>Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="PropertiesDlg.cpp">
       <Filter>Dialogs</Filter>
     </ClCompile>
@@ -126,6 +129,9 @@
       <Filter>Helpers</Filter>
     </ClInclude>
     <ClInclude Include="AboutDlg.h">
+      <Filter>Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="AppDialog.h">
       <Filter>Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="PropertiesDlg.h">

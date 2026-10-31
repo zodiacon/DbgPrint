@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AppDialog.h"
+
 #include "DialogHelper.h"
 #include "VirtualListView.h"
 #include "Interfaces.h"
@@ -8,7 +10,7 @@
 // edits the highlight rules: a row whose message contains a rule's text (any case) gets its colors
 //
 struct CHighlightDlg :
-	public CDialogImpl<CHighlightDlg>,
+	public CAppDialogImpl<CHighlightDlg>,
 	public CDynamicDialogLayout<CHighlightDlg>,
 	public CVirtualListView<CHighlightDlg>,
 	public CCustomDraw<CHighlightDlg>,

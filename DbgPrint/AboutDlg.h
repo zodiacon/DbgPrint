@@ -1,10 +1,12 @@
 
 #pragma once
 
+#include "AppDialog.h"
+
 #include "DialogHelper.h"
 
 class CAboutDlg : 
-	public CDialogImpl<CAboutDlg>,
+	public CAppDialogImpl<CAboutDlg>,
 	public CDialogHelper<CAboutDlg> {
 public:
 	enum { IDD = IDD_ABOUTBOX };
